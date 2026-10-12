@@ -1,4 +1,4 @@
-/* Technical sheet in one column. The parametric vector field in the hero is the single bold gesture;
+/* Technical sheet in one column. The contour map in the hero is the single bold gesture;
    computational work leads, architecture follows, the index and CV close. */
 :root {
   --bg: #EDEFF3;
@@ -144,11 +144,12 @@ footer.foot { margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--li
 .prose { max-width: 62ch; font-size: 17px; }
 .prose p { margin: 0 0 1em; }
 .facts { margin: 0; display: grid; align-content: start; border-top: 1px solid var(--ink); }
-.facts div { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; padding-block: 9px; border-bottom: 1px solid var(--line); }
+.facts div { display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 12px; padding-block: 9px; border-bottom: 1px solid var(--line); }
 .facts dt { margin: 0; }
 .facts dd { margin: 0; font-size: 15px; }
-.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 0; border-top: 1px solid var(--line); border-left: 1px solid var(--line); }
-.steps li { display: grid; grid-template-rows: auto 1fr; border-right: 1px solid var(--line); border-bottom: 1px solid var(--line); min-width: 0; }
+.steps { list-style: none; margin: 0; padding: 0 1px 1px 0; display: grid; grid-template-columns: repeat(var(--cols, 4), minmax(0, 1fr)); gap: 0; }
+/* Every step draws its own frame and overlaps its neighbours by 1px, so a short last row stays closed. */
+.steps li { display: grid; grid-template-rows: auto 1fr; border: 1px solid var(--line); margin: 0 -1px -1px 0; min-width: 0; }
 @media (max-width: 900px) { .steps { grid-template-columns: repeat(min(var(--cols, 4), 3), minmax(0, 1fr)); } }
 @media (max-width: 560px) { .steps { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .steps .pic { background: #fff; aspect-ratio: 4 / 3; display: grid; place-items: center; padding: 12px; border-bottom: 1px solid var(--line); }

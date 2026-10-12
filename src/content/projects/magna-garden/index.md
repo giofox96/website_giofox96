@@ -9,7 +9,7 @@ context: Competition, honourable mention
 location: Modugno, Bari
 summary: The garden of the Magna PT headquarters in Modugno, a sequence of plazas linked by an accessible path, with natural stone and low-water planting.
 cover: ./cover.jpg
-coverAlt: Paved plaza with palms and olive trees in front of the Magna PT offices
+coverAlt: A paved plaza with gravel beds of cacti and succulents, an olive tree in a planter and a timber pergola in front of the Magna PT headquarters
 gallery:
   - image: ./plan.jpg
     alt: Plan of the garden around the headquarters
@@ -21,9 +21,9 @@ gallery:
     caption: Site plan
     half: true
   - image: ./pavilion.jpg
-    alt: Open-air gym and pavilion among Mediterranean planting
+    alt: Panorama of the garden, from the existing building with its curved roof to the open-air gym and the elliptical canopy, among palms, cacti and agaves
   - image: ./views-1.jpg
-    alt: Views of the plazas, the cycle path and the planting
+    alt: A visitor with a bicycle on a timber deck by a pergola, and a couple with coffee on a paved plaza among cacti
     half: true
   - image: ./views-2.jpg
     alt: Views of the pergola, the paths and the planted beds

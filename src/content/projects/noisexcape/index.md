@@ -16,7 +16,7 @@ course: Data Encoding
 faculty: Gabriella Rossi, Georgios Bekakos
 link: https://blog.iaac.net/noisexcape-can-open-data-help-us-predict-urban-noise/
 cover: ./cover.jpg
-coverAlt: Map of Barcelona streets coloured by daytime noise level, from under 40 dB to over 70 dB
+coverAlt: Barcelona's street network coloured by betweenness and straightness centrality
 workflowTitle: Workflow
 workflow:
   - label: Noise data
@@ -32,7 +32,7 @@ workflow:
     text: Ablation studies and SHAP values show that distances to roads and network centrality carry most of the signal.
     image: ./step-4.jpg
   - label: Transfer
-    text: The models deployed on Barcelona and tested in five other European cities.
+    text: "Models trained on Barcelona, then deployed to five other European cities: Viladecans, Zaragoza, Lyon, Berlin and Milan."
     image: ./step-5.jpg
 gallery:
   - image: ./pipeline.jpg
@@ -47,13 +47,9 @@ gallery:
     alt: Explained variance of the principal components
     caption: Principal component analysis
     diagram: true
-  - image: ./models.jpg
-    alt: Predicted versus actual noise for linear regression, XGBoost and random forest
-    caption: Regression models, daytime
-    diagram: true
   - image: ./deployment.jpg
-    alt: Map of the deployed model predictions
-    caption: Deployment
+    alt: Map of Barcelona showing, for each street segment, the difference between the predicted and the true daytime noise class
+    caption: Prediction errors, daytime
     diagram: true
   - image: ./conclusions.jpg
     alt: Achievements, limitations and next steps
@@ -63,8 +59,8 @@ gallery:
 
 Noise is one of the most pervasive stressors in cities, yet detailed noise maps are expensive to produce and quickly go out of date. The project asks whether street-level noise can be estimated from openly available spatial data alone.
 
-Barcelona's open noise map provided the target values; OpenStreetMap provided street networks, land use, public transport, traffic signals and points of interest. After matching the two networks and cleaning the data, the dataset held 12,854 street segments, described also through space syntax metrics such as betweenness and closeness centrality.
+Barcelona's open noise map provided the target values; OpenStreetMap provided street networks, land use, public transport, traffic signals and points of interest. After matching the two networks and cleaning the data, the dataset held 12,854 street segments, each also described through space syntax metrics such as betweenness and closeness centrality.
 
-Tree-based models clearly outperformed linear regression: for daytime noise, random forest reached a test R² of 0.70 and XGBoost 0.67, against 0.44 for linear regression. Removing tunnel segments, acoustic outliers, gave the largest single improvement. Ablation studies showed that distance and network centrality features alone almost match the full feature set.
+Tree-based models clearly outperformed linear regression: for daytime noise, random forest reached a test R² of 0.70 and XGBoost 0.67, against 0.44 for linear regression. Removing tunnel segments, which behaved as acoustic outliers, gave the largest single improvement. Ablation studies showed that distance and network centrality features alone almost match the full feature set.
 
-Adding distance to roads and street centrality raised prediction accuracy in Barcelona from 49% to 70%. Four models were compared, SHAP values showed which features mattered most, and the models were tested in five other European cities, where population density and mobility patterns turned out to shape noise as much as street geometry.
+Adding distance to roads and street centrality raised prediction accuracy in Barcelona from 49% to 70%. Four models were compared, SHAP values showed which features mattered most, and the models were tested in five other European cities, where differences in population density and mobility patterns, not just street geometry, made transfer difficult.

@@ -10,7 +10,7 @@ context: Bari International Archifestival
 location: Bari
 summary: Bari's southern coast reorganised on the grid of the Murattiano district, with gardens, theatres, sports areas, phytoremediation tanks and sea pools, planted with native species only.
 cover: ./cover.jpg
-coverAlt: Aerial view of the coastal park laid out on an orthogonal grid along the sea
+coverAlt: Aerial view of the park blocks laid out on an orthogonal grid, with pools, gardens and planted areas
 gallery:
   - image: ./masterplan.jpg
     alt: Masterplan of the southern coast organised on the Murattiano grid

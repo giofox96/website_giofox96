@@ -10,7 +10,7 @@ interface Props {
 const { project, lead = false } = Astro.props;
 const d = project.data;
 const meta = [d.type, d.context, d.location, String(d.year)].filter(Boolean);
-const wide = lead && d.highlight;
+const wide = d.highlight;
 const team = collaborators(d.team, profile.name);
 ---
 <article class:list={["card", { wide }]}>
@@ -34,7 +34,7 @@ const team = collaborators(d.team, profile.name);
   <p>{d.summary}</p>
   {lead && d.workflow.length > 0 && (
     <>
-      {d.workflow.some((s) => s.image) && <ol class="flow" aria-label={d.workflowTitle}>
+      {d.workflow.some((s) => s.image) && <ol class="flow" aria-hidden="true">
         {d.workflow.map((s, i) => (
           <li>
             {s.image && <Picture src={s.image} alt="" formats={['webp']} fallbackFormat="jpg" widths={[120, 240]} sizes="64px" loading="lazy" />}

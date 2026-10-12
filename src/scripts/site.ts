@@ -13,7 +13,15 @@ document.getElementById('theme')?.addEventListener('click', () => {
   const next = effectiveTheme() === 'dark' ? 'light' : 'dark';
   root.setAttribute('data-theme', next);
   store('pf-theme', next);
+  syncThemeColor();
 });
+
+// Keep the browser UI colour in step with a theme picked by hand, not only with the OS setting.
+function syncThemeColor() {
+  const bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+  document.querySelectorAll('meta[name="theme-color"]').forEach((m) => m.setAttribute('content', bg));
+}
+if (root.hasAttribute('data-theme')) syncThemeColor();
 
 const copy = document.getElementById('copy');
 copy?.addEventListener('click', () => {

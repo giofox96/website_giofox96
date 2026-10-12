@@ -21,12 +21,12 @@ gallery:
     caption: Site plan
     half: true
   - image: ./plan-detail.jpg
-    alt: Axonometric of the new courtyard blocks
+    alt: Plan of the new housing units and porticoes next to a building with a cloister
     diagram: true
   - image: ./colonnade.jpg
     alt: Perspective of the colonnade framing a new square
   - image: ./axonometric.jpg
-    alt: Axonometric of the new buildings around the church
+    alt: Axonometric of the new stepped colonnaded buildings and tower, with an eye-level perspective
     diagram: true
   - image: ./elevation-1.jpg
     alt: Elevation of the colonnade

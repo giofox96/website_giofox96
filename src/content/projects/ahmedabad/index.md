@@ -17,7 +17,7 @@ cover: ./cover.jpg
 coverAlt: Render of the twisted mixed-use tower with vertical shading among white context blocks
 gallery:
   - image: ./concept.jpg
-    alt: Concept diagram with residential, office, commercial and public functions around courtyards
+    alt: Concept diagram dividing the site into private and public zones, with residential, office and commercial blocks between the monsoon and dry-season winds and the Sabarmati riverfront
     caption: Concept
     diagram: true
   - image: ./psychrometric.jpg
@@ -26,7 +26,7 @@ gallery:
     diagram: true
     half: true
   - image: ./iterations.jpg
-    alt: Four design iterations, from simple masses to courtyards
+    alt: Four design iterations of the massing in its urban context, three of them over ground radiation maps
     caption: Design iterations
     diagram: true
     half: true
@@ -39,8 +39,8 @@ gallery:
     caption: Phase 2, form and shading
     diagram: true
   - image: ./radiation.jpg
-    alt: Incident radiation on the residential, commercial and office blocks
-    caption: Daylight and radiation by block
+    alt: Daylight factor on the floor plates of the residential, commercial and office blocks
+    caption: Daylight factor by block
     diagram: true
   - image: ./utci.jpg
     alt: UTCI maps before and after the landscape design
@@ -52,4 +52,4 @@ Ahmedabad's climate ranges from 10 °C to 45 °C, with extreme heat stress from 
 
 Across four design explorations, internal courtyards became the central passive strategy, channelling southern breezes and using the stack effect to cool the public spaces. Phase 1 optimised the massing and orientation of the mixed-use volumes, reaching an average incident radiation of 183.95 kWh/m². Phase 2 twisted the forms and added vertical shading, lowering it to 152.51 kWh/m², a 17% improvement.
 
-Daylight factor, glare and the Universal Thermal Climate Index, before and after the landscape design, completed the assessment.
+Courtyards raise the daylight factor in all three blocks, and vertical shading prevents glare. The Universal Thermal Climate Index, before and after the landscape design, completed the assessment.

@@ -17,23 +17,23 @@ cover: ./cover.jpg
 coverAlt: The white lattice pavilion standing on curved legs in a park, people relaxing on the grass around it
 workflow:
   - label: Form-finding
-    text: From base points to a relaxed mesh with Kangaroo and Alpaca4d.
+    text: From base points to a relaxed mesh with Kangaroo, then a first shell analysis with Alpaca4d.
     image: ./step-1.jpg
   - label: Stress lines
     text: Principal stress lines traced on the mesh with Lilypad.
     image: ./step-2.jpg
   - label: Lattice fill
-    text: Body-centred cubic lattice cells filled with Crystallon.
+    text: The shell filled with body-centred cubic lattice cells using Crystallon.
     image: ./step-3.jpg
   - label: Structural analysis
-    text: Displacement and utilisation of the deformed model.
+    text: Displacement analysis of the first deformed model.
     image: ./step-4.jpg
   - label: Optimisation
     text: Shorter cantilevers, extra supports and no outer boundary loop. Maximum displacement down to 83 mm.
     image: ./step-5.jpg
 gallery:
   - image: ./park.jpg
-    alt: The pavilion in a park at sunset, its legs reaching the ground in a ring
+    alt: The pavilion in a sunlit park, its arched lattice legs seen from the side, with children playing on the lawn
   - image: ./workflow.jpg
     alt: Workflow diagram from primary curves and base mesh to structural analysis and optimisation
     caption: Workflow, first proposal
@@ -46,21 +46,17 @@ gallery:
     alt: Lattice structure with material, supports, loads and lattice properties
     caption: Structural model settings
     diagram: true
-  - image: ./optimisation-before.jpg
-    alt: Displacement of the pavilion before and after the design optimisation
-    caption: Before and after optimisation
-    diagram: true
   - image: ./workflow-revised.jpg
-    alt: Revised workflow with fewer cantilevers, more supports and the outer loop removed
+    alt: Revised workflow with shorter cantilevers, more pillars and the roof mesh's outer boundary loop removed
     caption: Workflow, second proposal
     diagram: true
-  - image: ./garden.jpg
-    alt: The pavilion among trees in a garden
   - image: ./florence-1.jpg
-    alt: The pavilion in a Florentine square with people around it
+    alt: Visualisation of the pavilion in a Florentine square, with people around it
+    caption: Visualisation
     half: true
   - image: ./florence-2.jpg
-    alt: The pavilion in front of Palazzo Vecchio in Florence
+    alt: Visualisation of the pavilion in front of Palazzo Vecchio, Florence
+    caption: Visualisation
     half: true
 ---
 

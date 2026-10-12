@@ -9,19 +9,20 @@ order: 1
 type: AI agent, layout search
 context: MaCAD, IAAC
 summary: A conversational copilot that finds the floor plan that fits the way a household lives, using semantic descriptions, room graphs and an agent that explains its choices.
-tags: [LLM agents, Graphs, Embeddings, Grasshopper]
+tags: [Python, PlanFinder, HDBSCAN, Grasshopper, RGraphLib, LLM agents]
 team: [Elena Corio, Marina Osmolovska, Giovanni Carlo Volpe, Andrea Cutroni, Symon Kipekemi]
 course: AIA Studio
 faculty: João M. Silva, Bao Trinh, Scott Lebow
 link: https://blog.iaac.net/inhabit-rethinking-residential-layout-search-with-spatial-intelligence/
 cover: ./cover.jpg
 coverAlt: The inHabit interface with a conversation panel, a selected floor plan and its scores
+workflowTitle: Workflow
 workflow:
   - label: Dataset
     text: Over 800 furnished layouts generated with custom Python scripts and PlanFinder.
     image: ./step-1.jpg
   - label: Furniture recognition
-    text: Furniture outlines clustered with HDBSCAN into 29 categories and eight architectural features.
+    text: Furniture outlines clustered with HDBSCAN, then classified with a catalogue of 29 furniture categories and eight architectural features.
     image: ./step-2.jpg
   - label: Semantic descriptions
     text: Room relationships computed as rules, then written in plain language by a vision language model.
@@ -37,7 +38,7 @@ workflow:
     image: ./step-6.jpg
 gallery:
   - image: ./approach.jpg
-    alt: Three phases, understand, explore and evaluate
+    alt: "The three phases of the tool: understand, explore and evaluate"
     caption: Understand, explore, evaluate
     diagram: true
   - image: ./feedback.jpg
@@ -49,7 +50,7 @@ gallery:
     caption: Semantic and graph search
     diagram: true
   - image: ./adaptation.jpg
-    alt: Examples of layouts adapted to a new boundary, with deleted and swapped rooms
+    alt: Layouts adapted to new boundaries by deleting or swapping rooms, and a case where adaptation fails
     caption: Layout adaptation
     diagram: true
   - image: ./benchmark.jpg
@@ -57,13 +58,13 @@ gallery:
     caption: Language model benchmark
     diagram: true
   - image: ./prompts.jpg
-    alt: Three household prompts of increasing detail
+    alt: Nine test prompts for three households, each described first by household, then by rooms and layout, then by daily routine
     caption: Test prompts
     diagram: true
 ---
 
-Finding the right home is not only about square metres or the number of bedrooms. The same floor plan can suit one household and fail another: parents with young children, remote workers, retirees or pet owners all live a space differently. Search tools still rely on simple filters that miss this.
+Finding the right home is not only about square metres or the number of bedrooms. The same floor plan can suit one household and fail another: parents with young children, remote workers, retirees or pet owners all experience the same space differently. Search tools still rely on simple filters that miss this.
 
 inHabit is a spatial intelligence copilot. People describe their household, habits and preferences in natural language; the system turns the brief into structured information, searches a database of residential layouts and returns the best match with an explanation. Each new detail refines the search instead of restarting it.
 
-Every apartment is described twice: as text, generated from geometric rules and a vision language model, and as a graph of rooms and their connections. The search combines both, so it looks for similar ways of living and similar spatial organisations. A stateful agent can adapt the chosen plan to a new boundary, then evaluates it with daylight simulation and daily routines for each member of the household.
+Every apartment is described twice: as text, generated from geometric rules and a vision language model, and as a graph of rooms and their connections. The search combines both, so it looks for similar ways of living and similar spatial organisations. When needed, a stateful agent adapts the chosen plan to a new boundary, then evaluates it with daylight simulation and daily routines for each member of the household.

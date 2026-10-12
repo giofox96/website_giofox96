@@ -6,7 +6,7 @@ category: architecture
 featured: true
 order: 1
 type: Master's thesis
-context: New York Institute of Technology
+context: Politecnico di Bari, research at NYIT
 location: Bronx, New York
 summary: A new waterfront for Mott Haven and Melrose, with a reused warehouse, a market hall, a mixed-use building and a terraced edge against flooding. The volumes are shaped by solar and wind analysis and built in glulam, CLT and DLT.
 tags: [Glulam, CLT, DLT]
@@ -59,7 +59,7 @@ gallery:
     alt: Section through the market hall and its branching timber structure
     caption: Section
   - image: ./waterfront.jpg
-    alt: People walking along the terraced waterfront
+    alt: People walking and children playing in the new park, among lawns, trees and timber canopies
   - image: ./site-plan.jpg
     alt: Site plan of the intervention on the Bronx waterfront
     caption: Site plan

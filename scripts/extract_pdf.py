@@ -45,8 +45,9 @@ def region(doc, pno, area):
 def spread(doc, left, right):
     """left/right: (page, xref) or (page, rect) for the two halves of a spread."""
     a, b = (doc[p - 1] for p in (left[0], right[0]))
-    ra = bbox(a, left[1]) + (1, 1, 0, -1) if isinstance(left[1], int) else pymupdf.Rect(left[1])
-    rb = bbox(b, right[1]) + (0, 1, -1, -1) if isinstance(right[1], int) else pymupdf.Rect(right[1])
+    # Trim the page edges where the halves meet so the seam does not show.
+    ra = bbox(a, left[1]) + (1, 1, -2, -1) if isinstance(left[1], int) else pymupdf.Rect(left[1])
+    rb = bbox(b, right[1]) + (2, 1, -1, -1) if isinstance(right[1], int) else pymupdf.Rect(right[1])
     width_pt = ra.width + rb.width
     dpi = min(MAX_DPI, MAX_PX / (width_pt / 72))
     ims = []
@@ -158,7 +159,7 @@ def main(pdf):
     save(region(doc, 7, 60), s, "structure")
     save(region(doc, 8, 66), s, "interior")
     save(spread(doc, (8, 64), (9, 72)), s, "section")
-    save(region(doc, 9, 74), s, "joint")
+    save(region(doc, 9, (20, 40, 575, 420)), s, "joint")
     strip = render(doc[4], pymupdf.Rect(20, 92, 580, 158), long_px=2400)
     for i, im in enumerate(bands(strip, axis=0, min_gap=30), 1):
         save(trim(im, pad=10), s, f"step-{i}")
@@ -190,7 +191,7 @@ def main(pdf):
     save(region(doc, 14, 108), s, "site-plan")
     save(region(doc, 15, 112), s, "masterplan")
     save(region(doc, 16, (60, 35, 560, 807)), s, "layers")
-    save(region(doc, 17, (36, 40, 560, 806)), s, "seasons")
+    save(region(doc, 17, (30, 28, 565, 812)), s, "seasons")
 
     # 4 Bercy Social Housing, pages 18-23
     s = "bercy-social-housing"
@@ -231,15 +232,15 @@ def main(pdf):
     save(spread(doc, (40, 357), (41, 361)), s, "cover")
     save(region(doc, 34, 301), s, "site-plan")
     save(region(doc, 34, 303), s, "dusk")
-    save(region(doc, 35, (228, 68, 548, 452)), s, "uses")
-    save(region(doc, 35, 319), s, "facade-1")
-    save(region(doc, 35, 321), s, "facade-2")
-    save(region(doc, 35, 323), s, "section-1")
-    save(region(doc, 35, 325), s, "section-2")
+    save(region(doc, 35, (228, 94, 548, 452)), s, "uses")
+    save(region(doc, 35, (34, 492, 294, 638)), s, "facade-1")
+    save(region(doc, 35, (301, 492, 560, 638)), s, "facade-2")
+    save(region(doc, 35, (35, 662, 294, 807)), s, "section-1")
+    save(region(doc, 35, (301, 662, 560, 807)), s, "section-2")
     save(region(doc, 36, 330), s, "terrace")
     save(region(doc, 36, 328), s, "lake")
     save(region(doc, 36, 332), s, "canopy")
-    save(region(doc, 37, 336), s, "building-system")
+    save(region(doc, 37, (35, 52, 560, 807)), s, "building-system")
     save(region(doc, 38, 344), s, "hall")
     save(region(doc, 38, 342), s, "exhibition-1")
     save(region(doc, 38, 340), s, "exhibition-2")

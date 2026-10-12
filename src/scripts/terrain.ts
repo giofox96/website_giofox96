@@ -5,7 +5,9 @@ type Grid = { w: number; h: number; z: Float32Array; min: number; max: number; m
 type Seg = (x1: number, y1: number, x2: number, y2: number, level: number) => void;
 
 async function load(src: string): Promise<Grid> {
-  const j = await (await fetch(src)).json();
+  const res = await fetch(src);
+  if (!res.ok) throw new Error(`terrain data: ${res.status}`);
+  const j = await res.json();
   const { width: w, height: h, min: lo, step, metresPerCell: mpp } = j;
   const [cx, cy] = j.centre;
   const bin = atob(j.data);
@@ -103,7 +105,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   const mctx = mask.getContext('2d')!;
 
   const S = smooth(g.z, g.w, g.h, SMOOTH);
-  let W = 0, H = 0, dpr = 1, s = 1, ox = 0, oy = 0;
+  let W = 0, H = 0, dpr = 1, s = 1, ox = 0, oy = 0, vmin = g.min, vmax = g.max;
   let probe: { x: number; y: number } | null = null;
   let raf = 0, visible = true, idleSince = 0;
 
@@ -129,6 +131,15 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     s = Math.max(W / (g.w - 1), H / (g.h - 1));
     ox = Math.min(Math.max(g.cx - W / s / 2, 0), g.w - 1 - W / s);
     oy = Math.min(Math.max(g.cy - H / s / 2, 0), g.h - 1 - H / s);
+    // Elevation range of the visible part, so the idle sweep never traces a level that is off screen.
+    vmin = Infinity; vmax = -Infinity;
+    const i0 = Math.floor(ox), i1 = Math.min(g.w - 1, Math.ceil(ox + W / s));
+    const j0 = Math.floor(oy), j1 = Math.min(g.h - 1, Math.ceil(oy + H / s));
+    for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const v = S[j * g.w + i];
+      if (v < vmin) vmin = v;
+      if (v > vmax) vmax = v;
+    }
   }
 
   function drawBase() {
@@ -144,7 +155,8 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     b.save();
     b.globalAlpha = .1;
     b.imageSmoothingEnabled = true;
-    b.drawImage(mask, -ox * s, -oy * s, g.w * s, g.h * s);
+    // Mask pixel i is centred on grid node i, like the contour vertices.
+    b.drawImage(mask, (-ox - .5) * s, (-oy - .5) * s, g.w * s, g.h * s);
     b.globalCompositeOperation = 'source-in';
     b.globalAlpha = 1;
     b.fillStyle = c.accent;
@@ -213,7 +225,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     else if (reduce) level = sample(g.cx, g.cy) - 6; // a ring just below the summit, not a single point
     else {
       const u = .5 - .5 * Math.cos(((t - idleSince) / 16000) * Math.PI * 2 + Math.PI * .35);
-      level = g.min + 2 + (g.max - g.min - 4) * u;
+      level = vmin + 2 + (vmax - vmin - 4) * u;
     }
     const line = new Path2D();
     trace(S, g.w, g.h, 0, 1, level, (x1, y1, x2, y2) => {

@@ -33,7 +33,7 @@ workflow:
     image: ./step-5.jpg
 gallery:
   - image: ./question.jpg
-    alt: The essay's question, whether public interiors are now designed for image consumption
+    alt: "The essay's question: what happens to public space when it is designed for the economy of likes, as clinics, libraries and schools start to look like cafés"
     caption: The question
     diagram: true
 ---

@@ -23,7 +23,7 @@ workflow:
     image: ./step-4.jpg
 gallery:
   - image: ./dusk.jpg
-    alt: The museum against a sunset sky above the quarry
+    alt: The crystalline museum volumes in the quarry meadow under a sky shifting from sunset to starry night
   - image: ./uses.jpg
     alt: Exploded diagram of the floors, from the hall to the panoramic area
     caption: Uses diagram
@@ -55,7 +55,7 @@ gallery:
   - image: ./lake.jpg
     alt: The museum reflected in the quarry lake
   - image: ./canopy.jpg
-    alt: Seating under the canopy, light passing through the facets
+    alt: Seating under the canopy at night, a starry sky through the openings and a lit faceted volume of the museum beyond
   - image: ./hall.jpg
     alt: Entrance hall with the reception desk
   - image: ./exhibition-1.jpg
@@ -63,7 +63,7 @@ gallery:
   - image: ./exhibition-2.jpg
     alt: Exhibition hall under the faceted roof
   - image: ./reception.jpg
-    alt: Reception area under the faceted roof
+    alt: Café bar under the faceted roof, with a stone counter and views to the quarry lake
   - image: ./exhibition-3.jpg
     alt: Exhibition hall with visitors and specimens
   - image: ./gallery.jpg

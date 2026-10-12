@@ -20,6 +20,7 @@ const {
 } = Astro.props;
 const pageTitle = title ? `${title} · ${profile.name}` : `${profile.name}, architect and computational designer`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const is404 = /\/404\/?$/.test(Astro.url.pathname);
 const ogImage = new URL(image ?? url('og.jpg'), Astro.site);
 const home = url();
 const nav = [
@@ -37,7 +38,7 @@ const nav = [
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={canonical} />
+    {!is404 && <link rel="canonical" href={canonical} />}
     <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
     <link rel="sitemap" href={url('sitemap-index.xml')} />
     <meta name="theme-color" content="#EDEFF3" media="(prefers-color-scheme: light)" />
@@ -46,7 +47,7 @@ const nav = [
     <meta property="og:site_name" content={profile.name} />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content={canonical} />
+    {!is404 && <meta property="og:url" content={canonical} />}
     <meta property="og:image" content={ogImage} />
     <meta name="twitter:card" content="summary_large_image" />
     <script is:inline>

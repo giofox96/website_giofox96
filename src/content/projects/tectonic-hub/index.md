@@ -63,8 +63,8 @@ gallery:
     caption: Old Harbour massing
     diagram: true
   - image: ./facade.jpg
-    alt: Hexagonal facade panels in four material types
-    caption: Facade panelisation
+    alt: Material palette of turbine-integrated panels, clear and filtered glass, basalt and green roof, with the turbines' estimated energy yield
+    caption: Material palette and turbine-integrated panels
     diagram: true
   - image: ./structure.jpg
     alt: Structure with concrete core, timber CLT slabs and steel bracing

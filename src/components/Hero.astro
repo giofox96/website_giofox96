@@ -26,5 +26,8 @@ import { url } from '../lib';
 <script>
   import { mountTerrain } from '../scripts/terrain';
   const cv = document.getElementById('terrain');
-  if (cv instanceof HTMLCanvasElement) mountTerrain(cv);
+  if (cv instanceof HTMLCanvasElement) {
+    // Without the elevation data there is nothing to draw: hide the map rather than show an empty frame.
+    mountTerrain(cv).catch(() => { cv.closest<HTMLElement>('.stage')!.hidden = true; });
+  }
 </script>

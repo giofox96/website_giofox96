@@ -23,19 +23,19 @@ gallery:
     caption: Site strategy
     diagram: true
   - image: ./elevation.jpg
-    alt: Elevation of the site from the river to the sheds
-    caption: Elevation
+    alt: Site section from the river to the renovated sheds, with the uses of each strip labelled
+    caption: Site section
   - image: ./sections.jpg
     alt: Sections through the renovated sheds with the housing units inside
     caption: Sections through the sheds
   - image: ./units-base.jpg
-    alt: Catalogue of spatial modules, base types and unit variations
-    caption: Spatial modules and base types
+    alt: "Unit catalogue, first part: spatial modules, base types, units and their variations"
+    caption: Unit catalogue
     diagram: true
     half: true
   - image: ./units-variants.jpg
-    alt: Catalogue of unit variants
-    caption: Unit variants
+    alt: "Unit catalogue, second part: further modules, base types T1 to T3, units and their variations"
+    caption: Unit catalogue, continued
     diagram: true
     half: true
   - image: ./distribution-base.jpg
@@ -51,12 +51,11 @@ gallery:
   - image: ./site-plan.jpg
     alt: Site plan of the freight yard near La Rapée station
     caption: Site plan
-    half: true
 ---
 
 The Bercy Social Housing project reimagines an abandoned freight yard near La Rapée station in Paris and turns it into a socially inclusive, functionally diverse district.
 
-Central to the proposal is micro-housing: modular units designed for a range of vulnerable people. The units sit inside renovated industrial sheds, creating layered spaces that combine private, semi-private and public functions. Each unit is built from base types and variants, combined with kitchen and bathroom modules.
+Central to the proposal is micro-housing: modular units designed for a range of vulnerable people. The units sit inside renovated industrial sheds, creating layered spaces that combine private, semi-private and public functions. Units are assembled from spatial modules, such as kitchen and bathroom blocks, and grouped into base types, from single rooms to T3 apartments, each with its variations.
 
 The project was an entry to the Prix W 2023 of the Fondation Wilmotte, whose brief, "Un toit pour tous", asked for dignified housing modules slipped under existing, unused roofs.
 

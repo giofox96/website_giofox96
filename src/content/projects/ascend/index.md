@@ -36,7 +36,7 @@ gallery:
     half: true
 ---
 
-Designing a staircase means balancing ergonomics, safety rules and form, and it usually happens inside complex CAD software, with the architect involved in every small change. Ascend brings that computational design into the web browser.
+Designing a staircase means balancing ergonomics, safety rules and form, and it usually happens inside complex CAD software, with the architect involved in every small change. Ascend brings computational design directly into the web browser.
 
 The app lets clients, interior designers and architects work together in real time on an accurate 3D model. Through sliders and menus, the mathematics of staircase design becomes a set of direct visual commands. Every interaction queries a Rhino Compute backend that recalculates the Grasshopper definition, so each configuration is physically plausible and safely proportioned, not just a picture.
 

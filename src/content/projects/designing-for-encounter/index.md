@@ -49,7 +49,7 @@ gallery:
     caption: Spreefeld, visibility and movement
     diagram: true
   - image: ./gnn-prediction.jpg
-    alt: Node label prediction on an apartment graph, with predicted and correct labels
+    alt: Node label prediction on a single apartment graph, misclassified nodes ringed in red, with 3 of 10 predictions correct
     caption: Appendix, node label prediction
     diagram: true
     half: true
@@ -60,7 +60,7 @@ gallery:
     half: true
 ---
 
-Corridors in apartment buildings are usually designed for movement, not for meeting: long, narrow and socially inert. Cohousing projects show that simple moves, such as widening a corridor, opening a view or adding a place to pause, can turn circulation into a social catalyst. These decisions are usually intuitive. The project asks whether spatial analysis can identify them systematically.
+Corridors in apartment buildings are usually designed for movement, not for meeting: long, narrow and socially inert. Cohousing projects show that simple moves, such as widening a corridor, opening a view or adding a place to pause, can turn circulation into a social catalyst. These decisions are usually intuitive rather than analytical. The project asks whether spatial analysis can systematically identify opportunities for encounter and inform targeted design interventions.
 
 Three cohousing buildings were studied: Wohnprojekt Wien and Gleis21 in Vienna, and Spreefeld in Berlin. Each was read through its floor plans, a topological graph of rooms and connections, space syntax centralities (closeness, betweenness and degree), shortest paths and isovists.
 

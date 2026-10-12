@@ -18,7 +18,7 @@ cover: ./cover.jpg
 coverAlt: Inside the market, light filtered by pink fabric curtains under the earthen roof, stalls and visitors below
 workflow:
   - label: Solar response
-    text: The roof module follows f(x) = a·x·sin(x), shaped to block the high summer sun and let in the low winter sun.
+    text: The roof module follows f(x) = a·x·sin(x), shaped to filter the high summer sun and let in the low winter sun; incident radiation is evaluated on 21 June, 9:00 to 16:00.
     image: ./step-1.jpg
   - label: Interlocking vault
     text: Truncated-tetrahedron tassels, scaled by the average incident radiation on each vault section.
@@ -38,7 +38,7 @@ gallery:
     caption: Concept and pseudocode
     diagram: true
   - image: ./market-1.jpg
-    alt: Market stalls with spices and visitors under the pink curtains
+    alt: Fruit and textile stalls with visitors under the pink curtains
     caption: AI-enhanced render
   - image: ./first-floor.jpg
     alt: Axonometric of the first floor with the curved walkway among the stalls
@@ -53,7 +53,7 @@ gallery:
     caption: Cross section
     diagram: true
   - image: ./market-2.jpg
-    alt: Visitors walking under the curtains along the market street
+    alt: Visitors walking under the pink curtains along the curved first-floor walkway, the market level visible below
     caption: AI-enhanced render
   - image: ./market-3.jpg
     alt: The curved first-floor walkway above the market
