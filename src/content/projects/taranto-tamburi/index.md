@@ -3,7 +3,7 @@ title: Taranto Tamburi
 subtitle: Regeneration through densification
 year: 2018
 category: other
-order: 2
+order: 5
 type: Urban regeneration and densification
 context: Politecnico di Bari
 location: Tamburi, Taranto

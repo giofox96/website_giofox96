@@ -3,7 +3,7 @@ title: Magna Garden
 subtitle: A sustainable makeover
 year: 2022
 category: other
-order: 1
+order: 4
 type: Landscape, xeriscaping
 context: Competition, honourable mention
 location: Modugno, Bari

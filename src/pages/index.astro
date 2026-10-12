@@ -15,14 +15,10 @@ const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.ye
   <section class="sec" id="computational">
     <div class="sec-head">
       <div><span class="label">01 · Parametric and algorithmic work</span><h2>{categories.computational.title}</h2></div>
-      <p class="note">Projects where the form comes from an algorithm: form-finding, subdivision and structural generation in Grasshopper.</p>
+      <p class="note">Projects where the form comes from an algorithm: form-finding, optimisation, aggregation and data-driven tools. Recent work from the MaCAD at IAAC, then earlier projects from Politecnico di Bari.</p>
     </div>
     <div class="grid lead">
       {featured('computational').map((p) => <ProjectCard project={p} lead />)}
-      <article class="card slot">
-        <span class="label">In preparation</span>
-        <h3>MaCAD projects, IAAC</h3>
-      </article>
     </div>
   </section>
 
@@ -39,7 +35,7 @@ const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.ye
   <section class="sec" id="other">
     <div class="sec-head">
       <div><span class="label">03 · Index</span><h2>{categories.other.title}</h2></div>
-      <p class="note">Full drawings available on request.</p>
+      <p class="note">Shorter studies and earlier projects. Each opens on its own page.</p>
     </div>
     <div class="table">
       <table>

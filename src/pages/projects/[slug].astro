@@ -23,10 +23,13 @@ const facts = [
   ['Context', d.context],
   ['Location', d.location],
   ['Tools', d.tags.join(', ')],
+  ['Team', d.team.length > 1 ? d.team.join(', ') : ''],
+  ['Course', d.course],
+  ['Faculty', d.faculty],
 ].filter(([, v]) => v);
-// 8 steps read as 4 + 4, 6 as 3 + 3.
+// Up to 5 steps sit on one row; 6 read as 3 + 3, 8 as 4 + 4.
 const n = d.workflow.length;
-const cols = n <= 4 ? n : n % 4 === 0 ? 4 : 3;
+const cols = n <= 5 ? n : n === 6 ? 3 : 4;
 ---
 <Base title={d.title} description={d.summary} image={d.cover.src}>
   <article>
@@ -44,6 +47,7 @@ const cols = n <= 4 ? n : n % 4 === 0 ? 4 : 3;
       <div class="prose"><Content /></div>
       <dl class="facts">
         {facts.map(([k, v]) => <div><dt class="label">{k}</dt><dd>{v}</dd></div>)}
+        {d.link && <div><dt class="label">Source</dt><dd><a href={d.link} rel="noopener">Full post on the IAAC Blog</a></dd></div>}
       </dl>
     </div>
 

@@ -19,7 +19,7 @@
     { "period": "2022", "role": "Visiting student", "where": "New York Institute of Technology", "work": "Research for the master's thesis on the South Bronx" }
   ],
   "education": [
-    { "period": "", "role": "MaCAD, Master in Advanced Computation for Architecture & Design", "where": "IAAC, Barcelona", "work": "" },
+    { "period": "2025–26", "role": "MaCAD, Master in Advanced Computation for Architecture & Design", "where": "IAAC, Barcelona", "work": "Thesis in progress, completion December 2026" },
     { "period": "2023", "role": "Licensed architect", "where": "Italian State Examination", "work": "" },
     { "period": "2017–22", "role": "M.Arch", "where": "Politecnico di Bari", "work": "110/110 cum laude" }
   ],

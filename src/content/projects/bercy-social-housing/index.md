@@ -6,6 +6,7 @@ category: architecture
 featured: true
 order: 3
 type: Housing
+context: Competition entry
 location: Paris
 summary: An abandoned freight yard near La Rapée turned into a 15-minute district, with modular micro-housing units set inside renovated industrial sheds.
 cover: ./cover.jpg

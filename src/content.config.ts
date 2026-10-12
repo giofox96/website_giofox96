@@ -19,6 +19,11 @@ const projects = defineCollection({
       location: z.string().optional(),
       summary: z.string(),
       tags: z.array(z.string()).default([]),
+      // Group work: everyone on the team, plus the course and its faculty.
+      team: z.array(z.string()).default([]),
+      course: z.string().optional(),
+      faculty: z.string().optional(),
+      link: z.url().optional(),
       cover: image(),
       coverAlt: z.string(),
       workflowTitle: z.string().default('Parametric workflow'),
