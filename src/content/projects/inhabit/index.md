@@ -4,7 +4,8 @@ subtitle: Residential layout search with spatial intelligence
 year: 2026
 category: computational
 featured: true
-order: 3
+highlight: true
+order: 1
 type: AI agent, layout search
 context: MaCAD, IAAC
 summary: A conversational copilot that finds the floor plan that fits the way a household lives, using semantic descriptions, room graphs and an agent that explains its choices.

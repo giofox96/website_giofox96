@@ -1,6 +1,7 @@
 ---
 import { Picture } from 'astro:assets';
-import { projectUrl, type Project } from '../lib';
+import profile from '../data/profile.json';
+import { collaborators, projectUrl, type Project } from '../lib';
 
 interface Props {
   project: Project;
@@ -9,23 +10,27 @@ interface Props {
 const { project, lead = false } = Astro.props;
 const d = project.data;
 const meta = [d.type, d.context, d.location, String(d.year)].filter(Boolean);
+const wide = lead && d.highlight;
+const team = collaborators(d.team, profile.name);
 ---
-<article class="card">
+<article class:list={["card", { wide }]}>
   <Picture
     class="thumb"
     src={d.cover}
     alt={d.coverAlt}
     formats={['avif', 'webp']}
     fallbackFormat="jpg"
-    widths={[480, 800, 1200]}
-    sizes={lead ? '(min-width: 1000px) 580px, 100vw' : '(min-width: 1000px) 380px, (min-width: 640px) 50vw, 100vw'}
+    widths={wide ? [640, 1000, 1400] : [480, 800, 1200]}
+    sizes={wide ? '(min-width: 1000px) 700px, 100vw' : lead ? '(min-width: 1000px) 580px, 100vw' : '(min-width: 1000px) 380px, (min-width: 640px) 50vw, 100vw'}
     loading="lazy"
   />
+  <div class="card-body">
   <h3>
     <a href={projectUrl(project)}>{d.title}</a>
     {lead && d.subtitle && <span class="card-sub">{d.subtitle}</span>}
   </h3>
   <div class="meta mono">{meta.map((m) => <span>{m}</span>)}</div>
+  {team && <p class="team">{team}</p>}
   <p>{d.summary}</p>
   {lead && d.workflow.length > 0 && (
     <>
@@ -41,4 +46,5 @@ const meta = [d.type, d.context, d.location, String(d.year)].filter(Boolean);
     </>
   )}
   {d.tags.length > 0 && <div class="tags">{d.tags.map((t) => <span>{t}</span>)}</div>}
+  </div>
 </article>

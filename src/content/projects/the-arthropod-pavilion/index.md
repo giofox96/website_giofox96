@@ -4,7 +4,7 @@ subtitle: Biomimetic lattice shell
 year: 2025
 category: computational
 featured: true
-order: 1
+order: 3
 type: Pavilion, structural optimisation
 context: MaCAD, IAAC
 summary: A lattice shell on discrete legs, inspired by the exoskeleton of the horseshoe crab. Form-finding, stress lines and a body-centred cubic lattice, then optimised down to 83 mm of maximum displacement.

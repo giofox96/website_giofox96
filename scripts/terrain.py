@@ -1,12 +1,12 @@
-"""Build the hero terrain: elevation around Locorotondo as a compact binary grid.
+"""Build the hero terrain: an elevation grid for the contour map on the home page.
 
-Usage: python3 scripts/terrain.py   (writes public/terrain/locorotondo.json)
+Usage: python3 scripts/terrain.py   (writes public/terrain/contours.json)
 
 Source: Mapzen Terrain Tiles on AWS (terrarium encoding, zoom 14). Data sources include
 SRTM and EU-DEM (produced using Copernicus data).
 
 JSON fields: width, height, min (m), step (m per unit), metresPerCell, centre [x, y] in cells,
-lat/lon of the centre, and data: base64 of width*height little-endian uint16 values,
+and data: base64 of width*height little-endian uint16 values,
 row by row from the north-west corner, where elevation = min + value * step.
 """
 import base64
@@ -19,12 +19,12 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 
-LAT, LON = 40.7556, 17.3264      # Locorotondo, historic centre
+LAT, LON = 40.7556, 17.3264      # centre of the map
 Z = 14
 SPAN_X, SPAN_Y = 900, 400        # crop in zoom-14 pixels (~6.5 x 2.9 km)
 DOWNSAMPLE = 2
 STEP = 0.05
-OUT = Path(__file__).resolve().parent.parent / "public" / "terrain" / "locorotondo.json"
+OUT = Path(__file__).resolve().parent.parent / "public" / "terrain" / "contours.json"
 
 
 def tile(x, y):
@@ -49,7 +49,7 @@ def main():
     lo = float(np.floor(h.min()))
     q = np.round((h - lo) / STEP).astype(np.uint16)
     cx, cy = (px - x0) / DOWNSAMPLE, (py - y0) / DOWNSAMPLE
-    # The round historic centre sits on the hilltop: snap to the highest point within ~450 m.
+    # Centre the view on the highest point within ~450 m.
     r = int(450 / mpp)
     yy, xx = np.mgrid[0:h.shape[0], 0:h.shape[1]]
     near = (xx - cx) ** 2 + (yy - cy) ** 2 <= r * r
@@ -62,7 +62,7 @@ def main():
     OUT.write_text(json.dumps({
         "source": "Mapzen Terrain Tiles (terrarium, zoom 14): SRTM, EU-DEM produced using Copernicus data",
         "width": h.shape[1], "height": h.shape[0], "min": lo, "step": STEP,
-        "metresPerCell": round(mpp, 3), "centre": [cx, cy], "lat": round(lat, 5), "lon": round(lon, 5),
+        "metresPerCell": round(mpp, 3), "centre": [cx, cy],
         "data": base64.b64encode(q.astype("<u2").tobytes()).decode(),
     }))
     print(f"{OUT.name}: {h.shape[1]}x{h.shape[0]} cells, {mpp:.1f} m/cell, {h.min():.0f}-{h.max():.0f} m, "

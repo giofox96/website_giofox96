@@ -6,9 +6,11 @@ category: architecture
 featured: true
 order: 3
 type: Housing
-context: Competition entry
+context: Prix W 2023, competition entry
 location: Paris
 summary: An abandoned freight yard near La Rapée turned into a 15-minute district, with modular micro-housing units set inside renovated industrial sheds.
+link: https://prixw.com/prix-w-2023-fr
+linkLabel: Prix W 2023 competition
 cover: ./cover.jpg
 coverAlt: Aerial view of the renovated freight yard and its sheds along the Seine
 gallery:
@@ -55,5 +57,7 @@ gallery:
 The Bercy Social Housing project reimagines an abandoned freight yard near La Rapée station in Paris and turns it into a socially inclusive, functionally diverse district.
 
 Central to the proposal is micro-housing: modular units designed for a range of vulnerable people. The units sit inside renovated industrial sheds, creating layered spaces that combine private, semi-private and public functions. Each unit is built from base types and variants, combined with kitchen and bathroom modules.
+
+The project was an entry to the Prix W 2023 of the Fondation Wilmotte, whose brief, "Un toit pour tous", asked for dignified housing modules slipped under existing, unused roofs.
 
 The project follows the "15-minute city" concept, with every essential service within a short walk. A new urban park, safe pedestrian connections and an ecological corridor reconnect the site to its context.

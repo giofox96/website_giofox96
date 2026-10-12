@@ -1,4 +1,4 @@
-// Contour map of Locorotondo from real elevation data (public/terrain/locorotondo.json, see scripts/terrain.py).
+// Contour map from real elevation data (public/terrain/contours.json, see scripts/terrain.py).
 // The contour under the pointer is traced in the accent colour; when idle, the traced level sweeps the terrain.
 
 type Grid = { w: number; h: number; z: Float32Array; min: number; max: number; mpp: number; cx: number; cy: number };
@@ -93,7 +93,8 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   const g = await load(cv.dataset.src);
   const root = document.documentElement;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const P = { interval: 2, smooth: 2, plane: 400 };
+  // Contour interval in metres, smoothing radius in cells; terrain above TINT metres gets a light fill.
+  const INTERVAL = 2, SMOOTH = 2, TINT = 400;
   const readout = document.getElementById('elev');
   const base = document.createElement('canvas');
   const bctx = base.getContext('2d')!;
@@ -101,16 +102,10 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   mask.width = g.w; mask.height = g.h;
   const mctx = mask.getContext('2d')!;
 
-  let S = smooth(g.z, g.w, g.h, P.smooth);
+  const S = smooth(g.z, g.w, g.h, SMOOTH);
   let W = 0, H = 0, dpr = 1, s = 1, ox = 0, oy = 0;
   let probe: { x: number; y: number } | null = null;
   let raf = 0, visible = true, idleSince = 0;
-
-  const plane = document.getElementById('p-plane') as HTMLInputElement | null;
-  if (plane) {
-    plane.min = String(Math.ceil(g.min));
-    plane.max = String(Math.floor(g.max));
-  }
 
   const colours = () => {
     const cs = getComputedStyle(root);
@@ -130,7 +125,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = r.width; H = r.height;
     for (const c of [cv, base]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
-    // Cover the canvas with the grid, centred on the town.
+    // Cover the canvas with the grid, centred on the high ground.
     s = Math.max(W / (g.w - 1), H / (g.h - 1));
     ox = Math.min(Math.max(g.cx - W / s / 2, 0), g.w - 1 - W / s);
     oy = Math.min(Math.max(g.cy - H / s / 2, 0), g.h - 1 - H / s);
@@ -142,9 +137,9 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     b.setTransform(dpr, 0, 0, dpr, 0, 0);
     b.clearRect(0, 0, W, H);
 
-    // Section plane: terrain above the plane gets a light accent fill.
+    // Light accent fill on the high ground.
     const img = mctx.createImageData(g.w, g.h);
-    for (let k = 0; k < S.length; k++) if (S[k] >= P.plane) img.data[k * 4 + 3] = 255;
+    for (let k = 0; k < S.length; k++) if (S[k] >= TINT) img.data[k * 4 + 3] = 255;
     mctx.putImageData(img, 0, 0);
     b.save();
     b.globalAlpha = .1;
@@ -156,11 +151,11 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     b.fillRect(0, 0, W, H);
     b.restore();
 
-    const minor = new Path2D(), major = new Path2D(), cut = new Path2D();
+    const minor = new Path2D(), major = new Path2D();
     const labels = new Map<string, { x: number; y: number; a: number; L: number }>();
-    const every = P.interval * 5 >= 10 ? P.interval * 5 : 10;
-    const start = Math.floor(g.min / P.interval) * P.interval;
-    trace(S, g.w, g.h, start, P.interval, null, (x1, y1, x2, y2, L) => {
+    const every = INTERVAL * 5;
+    const start = Math.floor(g.min / INTERVAL) * INTERVAL;
+    trace(S, g.w, g.h, start, INTERVAL, null, (x1, y1, x2, y2, L) => {
       const X1 = (x1 - ox) * s, Y1 = (y1 - oy) * s, X2 = (x2 - ox) * s, Y2 = (y2 - oy) * s;
       if ((X1 < -2 && X2 < -2) || (Y1 < -2 && Y2 < -2) || (X1 > W + 2 && X2 > W + 2) || (Y1 > H + 2 && Y2 > H + 2)) return;
       const isMajor = Math.abs(L / every - Math.round(L / every)) < 1e-6;
@@ -177,40 +172,27 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
         }
       }
     });
-    trace(S, g.w, g.h, 0, 1, P.plane, (x1, y1, x2, y2) => {
-      cut.moveTo((x1 - ox) * s, (y1 - oy) * s); cut.lineTo((x2 - ox) * s, (y2 - oy) * s);
-    });
 
     b.lineCap = 'round';
     b.strokeStyle = c.muted; b.globalAlpha = .45; b.lineWidth = .8; b.stroke(minor);
     b.strokeStyle = c.ink; b.globalAlpha = .8; b.lineWidth = 1.3; b.stroke(major);
-    b.globalAlpha = .9; b.lineWidth = 1; b.setLineDash([4, 3]); b.stroke(cut); b.setLineDash([]);
     b.globalAlpha = 1;
 
     // Elevation labels on the index contours.
     b.font = '500 10px "JetBrains Mono", ui-monospace, monospace';
     b.textAlign = 'center'; b.textBaseline = 'middle';
-    const town = { x: (g.cx - ox) * s, y: (g.cy - oy) * s };
     for (const l of labels.values()) {
-      if (Math.hypot(l.x - town.x, l.y - town.y) < 70) continue;
       b.save(); b.translate(l.x, l.y); b.rotate(l.a);
       b.lineWidth = 4; b.strokeStyle = c.surface; b.strokeText(String(Math.round(l.L)), 0, 0);
       b.fillStyle = c.ink; b.fillText(String(Math.round(l.L)), 0, 0);
       b.restore();
     }
 
-    // The round historic centre of Locorotondo, roughly 200 m across.
-    const rr = 100 / g.mpp * s;
-    b.strokeStyle = c.ink; b.lineWidth = 1.2; b.setLineDash([2, 3]);
-    b.beginPath(); b.arc(town.x, town.y, rr, 0, Math.PI * 2); b.stroke(); b.setLineDash([]);
-    b.fillStyle = c.ink; b.font = '500 11px "JetBrains Mono", ui-monospace, monospace'; b.textAlign = 'left';
-    b.lineWidth = 4; b.strokeStyle = c.surface;
-    b.strokeText('Locorotondo', town.x + rr + 6, town.y); b.fillText('Locorotondo', town.x + rr + 6, town.y);
-
     // North arrow and a 500 m scale bar.
     b.fillStyle = c.ink; b.strokeStyle = c.ink; b.lineWidth = 1.2;
     b.beginPath(); b.moveTo(W - 22, 34); b.lineTo(W - 22, 14); b.stroke();
     b.beginPath(); b.moveTo(W - 26, 20); b.lineTo(W - 22, 12); b.lineTo(W - 18, 20); b.closePath(); b.fill();
+    b.font = '500 11px "JetBrains Mono", ui-monospace, monospace';
     b.textAlign = 'center'; b.fillText('N', W - 22, 46);
     const bar = 500 / g.mpp * s;
     b.beginPath(); b.moveTo(14, H - 14); b.lineTo(14 + bar, H - 14);
@@ -228,7 +210,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
 
     let level: number;
     if (probe) level = sample(probe.x / s + ox, probe.y / s + oy);
-    else if (reduce) level = sample(g.cx, g.cy);
+    else if (reduce) level = sample(g.cx, g.cy) - 6; // a ring just below the summit, not a single point
     else {
       const u = .5 - .5 * Math.cos(((t - idleSince) / 16000) * Math.PI * 2 + Math.PI * .35);
       level = g.min + 2 + (g.max - g.min - 4) * u;
@@ -269,23 +251,6 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   cv.addEventListener('pointermove', setProbe);
   cv.addEventListener('pointerdown', setProbe);
   cv.addEventListener('pointerleave', () => { probe = null; idleSince = performance.now(); request(); });
-
-  const bind = (id: keyof typeof P, fmt: (v: number) => string, after?: () => void) => {
-    const el = document.getElementById(`p-${id}`) as HTMLInputElement | null;
-    const out = document.getElementById(`o-${id}`);
-    if (!el) return;
-    el.value = String(P[id]);
-    if (out) out.textContent = fmt(P[id]);
-    el.addEventListener('input', () => {
-      P[id] = parseFloat(el.value);
-      if (out) out.textContent = fmt(P[id]);
-      after?.();
-      rebuild();
-    });
-  };
-  bind('interval', (v) => `${v} m`);
-  bind('smooth', (v) => (v === 0 ? 'raw' : `${Math.round(v * g.mpp)} m`), () => { S = smooth(g.z, g.w, g.h, P.smooth); });
-  bind('plane', (v) => `${v} m`);
 
   let rt = 0;
   window.addEventListener('resize', () => {

@@ -6,7 +6,11 @@ import profile from '../data/profile.json';
 import { allProjects, projectUrl, categories } from '../lib';
 
 const projects = await allProjects();
-const featured = (cat: 'computational' | 'architecture') => projects.filter((p) => p.data.featured && p.data.category === cat);
+// Highlighted projects come first, as full-width cards.
+const featured = (cat: 'computational' | 'architecture') =>
+  projects
+    .filter((p) => p.data.featured && p.data.category === cat)
+    .sort((a, b) => Number(b.data.highlight) - Number(a.data.highlight));
 const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.year - a.data.year);
 ---
 <Base>

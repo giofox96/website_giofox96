@@ -4,7 +4,7 @@ subtitle: Museum of Biodiversity
 year: 2021
 category: computational
 featured: true
-order: 6
+order: 8
 type: Museum
 context: Politecnico di Bari
 location: Gran Marrone quarry, Ofanto Valley Park

@@ -4,7 +4,7 @@ subtitle: Parametric staircase design from web to CAD
 year: 2026
 category: computational
 featured: true
-order: 4
+order: 6
 type: Web app, Rhino Compute
 context: MaCAD, IAAC
 summary: An interactive 3D web app for designing staircases. Sliders drive a Grasshopper definition through Rhino Compute, and the result exports as a layered .3dm file ready for CAD.

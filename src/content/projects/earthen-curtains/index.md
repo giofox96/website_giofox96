@@ -4,7 +4,7 @@ subtitle: An adaptive earthen vault for the Bab al-Luq market
 year: 2025
 category: computational
 featured: true
-order: 2
+order: 4
 type: Market roof, 3D-printed earth
 context: MaCAD, IAAC
 location: Bab al-Luq market, Cairo

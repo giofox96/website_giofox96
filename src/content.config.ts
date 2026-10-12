@@ -13,6 +13,8 @@ const projects = defineCollection({
       category: z.enum(['computational', 'architecture', 'other']),
       // Featured projects get a large card; the rest go in the compact index.
       featured: z.boolean().default(false),
+      // Highlighted projects get a full-width card at the top of their section.
+      highlight: z.boolean().default(false),
       order: z.number().default(99),
       type: z.string(),
       context: z.string().optional(),
@@ -24,6 +26,7 @@ const projects = defineCollection({
       course: z.string().optional(),
       faculty: z.string().optional(),
       link: z.url().optional(),
+      linkLabel: z.string().default('Full post on the IAAC Blog'),
       cover: image(),
       coverAlt: z.string(),
       workflowTitle: z.string().default('Parametric workflow'),

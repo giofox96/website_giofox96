@@ -3,7 +3,8 @@ title: Tectonic Hub
 subtitle: A climate-adaptive recipe for cultural hubs in Reykjavík
 year: 2025
 category: computational
-order: 1
+featured: true
+order: 5
 type: Cultural hub, stochastic aggregation
 context: MaCAD, IAAC
 location: Reykjavík
@@ -15,6 +16,29 @@ faculty: Lucia Leva Fuentes, James McBennett, Laukik Lad
 link: https://blog.iaac.net/150399-2/
 cover: ./cover.jpg
 coverAlt: The cultural hub lit from inside on a dark winter morning at the Old Harbour
+workflowTitle: Computational workflow
+workflow:
+  - label: Topology grid
+    text: Modules scaled and oriented toward the prevailing wind or along the site's longest axis.
+    image: ./step-1.jpg
+  - label: Shortest path
+    text: The shortest path between two grid points along the topological graph.
+    image: ./step-2.jpg
+  - label: Cores
+    text: Cores placed along the path, within the fire-safety travel distance.
+    image: ./step-3.jpg
+  - label: First aggregation
+    text: The ground floor grows around the cores with WASP.
+    image: ./step-4.jpg
+  - label: Second aggregation
+    text: The building grows floor by floor in a controlled loop.
+    image: ./step-5.jpg
+  - label: Third aggregation
+    text: The last step completes the overall volume.
+    image: ./step-6.jpg
+  - label: Wind optimisation
+    text: Evolutionary optimisation picks the pair of grid points whose footprint gives the best pedestrian wind comfort and built area.
+    image: ./step-7.jpg
 gallery:
   - image: ./topological-map.jpg
     alt: Topological map of public, semi-private, support, event and core modules by floor
@@ -33,10 +57,6 @@ gallery:
   - image: ./workflow.jpg
     alt: Computational workflow from site boundary and topological graph to aggregations, facade and structure
     caption: Computational workflow
-    diagram: true
-  - image: ./aggregation.jpg
-    alt: Step-by-step aggregation of a single building
-    caption: Aggregation, step by step
     diagram: true
   - image: ./massing.jpg
     alt: Aggregated massing for the Old Harbour site with programme distribution

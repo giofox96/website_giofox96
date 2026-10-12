@@ -12,18 +12,13 @@ import { url } from '../lib';
   <div class="stage">
     <canvas
       id="terrain"
-      data-src={url('terrain/locorotondo.json')}
+      data-src={url('terrain/contours.json')}
       role="img"
-      aria-label="Contour map of Locorotondo in the Valle d'Itria, drawn from elevation data. The contour under the pointer is highlighted with its elevation."
+      aria-label="Contour map drawn from real elevation data. The contour under the pointer is highlighted with its elevation."
     ></canvas>
-    <div class="controls">
-      <label class="ctl" for="p-interval"><span class="row label"><span>Contour interval</span><output id="o-interval" class="mono">2 m</output></span><input id="p-interval" type="range" min="1" max="10" step="1" value="2" /></label>
-      <label class="ctl" for="p-smooth"><span class="row label"><span>Generalisation</span><output id="o-smooth" class="mono">29 m</output></span><input id="p-smooth" type="range" min="0" max="6" step="1" value="2" /></label>
-      <label class="ctl" for="p-plane"><span class="row label"><span>Section plane</span><output id="o-plane" class="mono">400 m</output></span><input id="p-plane" type="range" min="334" max="425" step="1" value="400" /></label>
-    </div>
     <div class="cap mono">
-      <span>Locorotondo, Valle d'Itria, 40.753° N 17.330° E. Move across the map to trace a contour.</span>
-      <span>Traced <b id="elev">393 m</b></span>
+      <span>Contours from real elevation data, 2 m interval. Move across the map to trace one.</span>
+      <span>Traced <b id="elev">415 m</b></span>
     </div>
     <p class="credit mono">Elevation: Mapzen Terrain Tiles, from SRTM and EU-DEM (Copernicus).</p>
   </div>
