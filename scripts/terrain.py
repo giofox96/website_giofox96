@@ -1,16 +1,17 @@
 """Build the hero terrain: elevation around Locorotondo as a compact binary grid.
 
-Usage: python3 scripts/terrain.py   (writes public/terrain/locorotondo.bin)
+Usage: python3 scripts/terrain.py   (writes public/terrain/locorotondo.json)
 
 Source: Mapzen Terrain Tiles on AWS (terrarium encoding, zoom 14). Data sources include
 SRTM and EU-DEM (produced using Copernicus data).
 
-File layout, little-endian:
-  8 x float32 header: width, height, min elevation (m), step (m per unit),
-                      metres per cell, centre x, centre y (cells), reserved
-  width*height x uint16 elevation = min + value * step
+JSON fields: width, height, min (m), step (m per unit), metresPerCell, centre [x, y] in cells,
+lat/lon of the centre, and data: base64 of width*height little-endian uint16 values,
+row by row from the north-west corner, where elevation = min + value * step.
 """
+import base64
 import io
+import json
 import math
 import urllib.request
 from pathlib import Path
@@ -23,7 +24,7 @@ Z = 14
 SPAN_X, SPAN_Y = 900, 400        # crop in zoom-14 pixels (~6.5 x 2.9 km)
 DOWNSAMPLE = 2
 STEP = 0.05
-OUT = Path(__file__).resolve().parent.parent / "public" / "terrain" / "locorotondo.bin"
+OUT = Path(__file__).resolve().parent.parent / "public" / "terrain" / "locorotondo.json"
 
 
 def tile(x, y):
@@ -57,9 +58,13 @@ def main():
     lon = (x0 + cx * DOWNSAMPLE) / (n * 256) * 360 - 180
     lat = math.degrees(math.atan(math.sinh(math.pi * (1 - 2 * (y0 + cy * DOWNSAMPLE) / (n * 256)))))
     print(f"hilltop at {lat:.4f} N, {lon:.4f} E")
-    header = np.array([h.shape[1], h.shape[0], lo, STEP, mpp, cx, cy, 0], dtype="<f4")
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_bytes(header.tobytes() + q.astype("<u2").tobytes())
+    OUT.write_text(json.dumps({
+        "source": "Mapzen Terrain Tiles (terrarium, zoom 14): SRTM, EU-DEM produced using Copernicus data",
+        "width": h.shape[1], "height": h.shape[0], "min": lo, "step": STEP,
+        "metresPerCell": round(mpp, 3), "centre": [cx, cy], "lat": round(lat, 5), "lon": round(lon, 5),
+        "data": base64.b64encode(q.astype("<u2").tobytes()).decode(),
+    }))
     print(f"{OUT.name}: {h.shape[1]}x{h.shape[0]} cells, {mpp:.1f} m/cell, {h.min():.0f}-{h.max():.0f} m, "
           f"centre {cx:.0f},{cy:.0f} at {h[int(cy), int(cx)]:.0f} m, {OUT.stat().st_size // 1024} KB")
 

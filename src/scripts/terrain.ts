@@ -1,17 +1,22 @@
-// Contour map of Locorotondo from real elevation data (public/terrain/locorotondo.bin, see scripts/terrain.py).
+// Contour map of Locorotondo from real elevation data (public/terrain/locorotondo.json, see scripts/terrain.py).
 // The contour under the pointer is traced in the accent colour; when idle, the traced level sweeps the terrain.
 
 type Grid = { w: number; h: number; z: Float32Array; min: number; max: number; mpp: number; cx: number; cy: number };
 type Seg = (x1: number, y1: number, x2: number, y2: number, level: number) => void;
 
 async function load(src: string): Promise<Grid> {
-  const buf = await (await fetch(src)).arrayBuffer();
-  const [w, h, lo, step, mpp, cx, cy] = new Float32Array(buf, 0, 8);
-  const q = new Uint16Array(buf, 32, w * h);
+  const j = await (await fetch(src)).json();
+  const { width: w, height: h, min: lo, step, metresPerCell: mpp } = j;
+  const [cx, cy] = j.centre;
+  const bin = atob(j.data);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const view = new DataView(bytes.buffer);
+  const q = { length: w * h, at: (i: number) => view.getUint16(i * 2, true) };
   const z = new Float32Array(w * h);
   let min = Infinity, max = -Infinity;
   for (let i = 0; i < z.length; i++) {
-    const v = lo + q[i] * step;
+    const v = lo + q.at(i) * step;
     z[i] = v;
     if (v < min) min = v;
     if (v > max) max = v;
