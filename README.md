@@ -1,0 +1,65 @@
+# Giovanni Carlo Volpe, portfolio
+
+Static site built with [Astro](https://astro.build). Content lives in Markdown and JSON; adding a project means adding a folder.
+
+## Run locally
+
+```bash
+npm install
+npm run dev        # http://localhost:4321/website_giofox96/
+npm run build      # static site in dist/
+```
+
+## Add or edit a project
+
+Each project is a folder in `src/content/projects/<slug>/` with an `index.md` and its images:
+
+```
+src/content/projects/my-project/
+  index.md
+  cover.jpg
+  step-1.jpg …
+```
+
+The front matter in `index.md` drives everything:
+
+| Field | Meaning |
+|---|---|
+| `title`, `subtitle`, `year`, `type`, `context`, `location` | Project data |
+| `category` | `computational`, `architecture` or `other` |
+| `featured` | `true` shows a large card in its section; `false` puts it in the "Other projects" index |
+| `order` | Position inside its section |
+| `summary` | Two lines for the card |
+| `tags` | Tools and techniques |
+| `cover`, `coverAlt` | Main image and its description |
+| `workflow` | Ordered steps, each with `label`, optional `text` and `image` |
+| `gallery` | Images for the detail page; `half: true` puts two side by side, `diagram: true` keeps a white background |
+
+The text below the front matter is the project description. Images are converted to AVIF and WebP at several sizes during the build.
+
+CV, tools, exhibitions and contacts are in `src/data/profile.json`.
+
+## Images from the PDF portfolio
+
+`scripts/extract_pdf.py` extracts the current images from the InDesign PDF (kept locally in `source/`, not committed):
+
+```bash
+pip install pymupdf pillow
+python3 scripts/extract_pdf.py source/portfolio-2025.pdf
+```
+
+It rewrites the image files in each project folder; the `index.md` files are not touched.
+
+## Publish on GitHub Pages
+
+1. On GitHub: **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+2. Every push to `main` (or to the working branch) runs `.github/workflows/deploy.yml`, which builds and publishes the site at `https://giofox96.github.io/website_giofox96/`.
+
+### Custom domain
+
+1. Buy the domain (for example from Namecheap, OVH or Aruba).
+2. At the registrar, add DNS records:
+   - for the apex domain (`example.com`): four `A` records to `185.199.108.153`, `185.199.109.153`, `185.199.110.153`, `185.199.111.153`;
+   - for `www`: a `CNAME` record to `giofox96.github.io`.
+3. On GitHub: **Settings → Pages → Custom domain**, enter the domain, then tick **Enforce HTTPS** once the certificate is ready.
+4. In `astro.config.mjs` set `site: 'https://example.com'` and remove `base`. Update the sitemap line in `public/robots.txt`.

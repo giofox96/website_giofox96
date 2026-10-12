@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import profile from '../data/profile.json';
+import { allProjects, projectUrl, categories } from '../lib';
+
+const projects = await allProjects();
+const featured = (cat: 'computational' | 'architecture') => projects.filter((p) => p.data.featured && p.data.category === cat);
+const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.year - a.data.year);
+---
+<Base>
+  <Hero />
+
+  <section class="sec" id="computational">
+    <div class="sec-head">
+      <div><span class="label">01 · Parametric and algorithmic work</span><h2>{categories.computational.title}</h2></div>
+      <p class="note">Projects where the form comes from an algorithm: form-finding, subdivision and structural generation in Grasshopper.</p>
+    </div>
+    <div class="grid lead">
+      {featured('computational').map((p) => <ProjectCard project={p} lead />)}
+      <article class="card slot">
+        <span class="label">In preparation</span>
+        <h3>MaCAD projects, IAAC</h3>
+      </article>
+    </div>
+  </section>
+
+  <section class="sec" id="architecture">
+    <div class="sec-head">
+      <div><span class="label">02 · Academic and competition work</span><h2>{categories.architecture.title}</h2></div>
+      <p class="note">Design projects from Politecnico di Bari and New York Institute of Technology, from urban scale to timber construction details.</p>
+    </div>
+    <div class="grid">
+      {featured('architecture').map((p) => <ProjectCard project={p} />)}
+    </div>
+  </section>
+
+  <section class="sec" id="other">
+    <div class="sec-head">
+      <div><span class="label">03 · Index</span><h2>{categories.other.title}</h2></div>
+      <p class="note">Full drawings available on request.</p>
+    </div>
+    <div class="table">
+      <table>
+        <thead><tr><th class="label">Year</th><th class="label">Project</th><th class="label">Type</th><th class="label">Context</th></tr></thead>
+        <tbody>
+          {others.map((p) => (
+            <tr>
+              <td>{p.data.year}</td>
+              <td><a href={projectUrl(p)}>{p.data.title}</a></td>
+              <td>{p.data.type}</td>
+              <td>{p.data.context}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="sec" id="experience">
+    <div class="sec-head">
+      <div><span class="label">04 · CV</span><h2>Experience</h2></div>
+    </div>
+    <div class="table">
+      <table>
+        <thead><tr><th class="label">Period</th><th class="label">Role</th><th class="label">Where</th><th class="label">Work</th></tr></thead>
+        <tbody>
+          {profile.experience.map((e) => (
+            <tr><td>{e.period}</td><td>{e.role}</td><td>{e.where}</td><td>{e.work}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div class="table">
+      <table>
+        <thead><tr><th class="label">Year</th><th class="label">Education</th><th class="label">Where</th><th class="label">Note</th></tr></thead>
+        <tbody>
+          {profile.education.map((e) => (
+            <tr><td>{e.period}</td><td>{e.role}</td><td>{e.where}</td><td>{e.work}</td></tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+    <div class="kit">
+      <div>
+        <span class="label">Exhibitions and awards</span>
+        <ul>{profile.exhibitions.map((x) => <li>{x.title}, {x.where}, {x.year}{x.note && <small>{x.note}</small>}</li>)}</ul>
+      </div>
+      {profile.tools.map((t) => (
+        <div>
+          <span class="label">{t.level}</span>
+          <ul>{t.items.map((i) => <li>{i}</li>)}</ul>
+        </div>
+      ))}
+      <div>
+        <span class="label">Languages</span>
+        <ul>{profile.languages.map((l) => <li>{l.name}<small>{l.level}</small></li>)}</ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="sec" id="about">
+    <div class="two">
+      <div>
+        <div class="sec-head"><div><h2>About</h2></div></div>
+        <p>I am an Italian architect from Puglia. My background moves between scales: from heritage survey in the AlUla desert to the restoration of Tuscan farmhouses, and from urban plans to the joints of a timber structure.</p>
+        <p>Computation has been part of my design work since university, in projects like The Sh-Rooms and MuBi. With MaCAD I am making it the core of my practice: I want to use code to make design decisions explicit and test them before anything gets built.</p>
+        <p>Today I work as a technical architect at Orion Design and Implementation, where I lead parametric modelling and work on interior design.</p>
+      </div>
+      <div id="contact">
+        <div class="sec-head"><div><h2>Contact</h2></div></div>
+        <p>Write to me about a project, a collaboration, or to receive the full portfolio. English and Italian.</p>
+        <div class="mail">
+          <a href={`mailto:${profile.email}`}>{profile.email}</a>
+          <button class="btn" id="copy" type="button" data-copy={profile.email}>Copy address</button>
+        </div>
+        <p class="social mono">{profile.links.map((l) => <a href={l.url} rel="me">{l.label}</a>)}</p>
+      </div>
+    </div>
+  </section>
+</Base>

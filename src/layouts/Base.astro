@@ -1,0 +1,83 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource-variable/instrument-sans';
+import '@fontsource/jetbrains-mono/400.css';
+import '@fontsource/jetbrains-mono/500.css';
+import '../styles/global.css';
+import profile from '../data/profile.json';
+import { url } from '../lib';
+
+interface Props {
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const {
+  title,
+  description = 'Giovanni Carlo Volpe, architect and computational designer from Puglia. Parametric modelling, form-finding and architecture.',
+  image,
+} = Astro.props;
+const pageTitle = title ? `${title} · ${profile.name}` : `${profile.name}, architect and computational designer`;
+const canonical = new URL(Astro.url.pathname, Astro.site);
+const ogImage = new URL(image ?? url('og.jpg'), Astro.site);
+const home = url();
+const nav = [
+  ['Computational', 'computational'],
+  ['Architecture', 'architecture'],
+  ['Experience', 'experience'],
+  ['About', 'about'],
+  ['Contact', 'contact'],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonical} />
+    <link rel="icon" href={url('favicon.svg')} type="image/svg+xml" />
+    <link rel="sitemap" href={url('sitemap-index.xml')} />
+    <meta name="theme-color" content="#EDEFF3" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0F1118" media="(prefers-color-scheme: dark)" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={profile.name} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:image" content={ogImage} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script is:inline>
+      try {
+        var t = localStorage.getItem('pf-theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <div class="wrap">
+      <header class="top">
+        <a class="brand" href={home}>{profile.name}</a>
+        <nav class="nav" aria-label="Sections">
+          {nav.map(([label, id]) => <a href={`${home}#${id}`}>{label}</a>)}
+        </nav>
+        <button class="chip" id="theme" type="button" aria-label="Switch between light and dark theme">◐</button>
+      </header>
+
+      <main id="main">
+        <slot />
+      </main>
+
+      <footer class="foot mono">
+        <span>© {new Date().getFullYear()} {profile.name}. {profile.role}.</span>
+        <span>{profile.location}</span>
+      </footer>
+    </div>
+    <script>
+      import '../scripts/site';
+    </script>
+  </body>
+</html>

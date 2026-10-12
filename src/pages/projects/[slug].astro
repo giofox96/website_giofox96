@@ -1,0 +1,87 @@
+---
+import { Picture } from 'astro:assets';
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { allProjects, projectUrl, categories, url, type Project } from '../../lib';
+
+export async function getStaticPaths() {
+  const list = await allProjects();
+  return list.map((project, i) => ({
+    params: { slug: project.id },
+    props: { project, prev: list[i - 1] ?? list[list.length - 1], next: list[i + 1] ?? list[0] },
+  }));
+}
+
+interface Props { project: Project; prev: Project; next: Project; }
+const { project, prev, next } = Astro.props;
+const d = project.data;
+const { Content } = await render(project);
+const cat = categories[d.category];
+const facts = [
+  ['Year', String(d.year)],
+  ['Type', d.type],
+  ['Context', d.context],
+  ['Location', d.location],
+  ['Tools', d.tags.join(', ')],
+].filter(([, v]) => v);
+// 8 steps read as 4 + 4, 6 as 3 + 3.
+const n = d.workflow.length;
+const cols = n <= 4 ? n : n % 4 === 0 ? 4 : 3;
+---
+<Base title={d.title} description={d.summary} image={d.cover.src}>
+  <article>
+    <header class="p-head">
+      <a class="crumb mono" href={`${url()}#${cat.anchor}`}>{cat.title}</a>
+      <h1>{d.title}</h1>
+      {d.subtitle && <p class="sub">{d.subtitle}</p>}
+    </header>
+
+    <figure class="p-cover" style="margin:0">
+      <Picture src={d.cover} alt={d.coverAlt} formats={['avif', 'webp']} fallbackFormat="jpg" widths={[640, 1200, 1800]} sizes="(min-width: 1250px) 1200px, 100vw" loading="eager" fetchpriority="high" />
+    </figure>
+
+    <div class="p-body">
+      <div class="prose"><Content /></div>
+      <dl class="facts">
+        {facts.map(([k, v]) => <div><dt class="label">{k}</dt><dd>{v}</dd></div>)}
+      </dl>
+    </div>
+
+    {d.workflow.length > 0 && (
+      <section class="sec">
+        <div class="sec-head"><div><h2>{d.workflowTitle}</h2></div><p class="note">{d.workflow.length} steps, in order.</p></div>
+        <ol class="steps" style={`--cols: ${cols}`}>
+          {d.workflow.map((s, i) => (
+            <li>
+              {s.image && <div class="pic"><Picture src={s.image} alt="" formats={['webp']} fallbackFormat="jpg" widths={[320, 640]} sizes="(min-width: 900px) 280px, 50vw" loading="lazy" /></div>}
+              <div class="txt">
+                <span class="label">Step {i + 1}</span>
+                <h3>{s.label}</h3>
+                {s.text && <p>{s.text}</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )}
+
+    {d.gallery.length > 0 && (
+      <section class="sec">
+        <div class="sec-head"><div><h2>Drawings and images</h2></div></div>
+        <div class="gallery">
+          {d.gallery.map((g) => (
+            <figure class:list={[{ half: g.half, diagram: g.diagram }]}>
+              <Picture src={g.image} alt={g.alt} formats={['avif', 'webp']} fallbackFormat="jpg" widths={g.half ? [480, 800, 1200] : [640, 1200, 1800]} sizes={g.half ? '(min-width: 1250px) 590px, (min-width: 640px) 50vw, 100vw' : '(min-width: 1250px) 1200px, 100vw'} loading="lazy" />
+              {g.caption && <figcaption class="mono">{g.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
+    <nav class="pn" aria-label="More projects">
+      <a href={projectUrl(prev)}><span class="label">Previous</span><strong>{prev.data.title}</strong></a>
+      <a href={projectUrl(next)}><span class="label">Next</span><strong>{next.data.title}</strong></a>
+    </nav>
+  </article>
+</Base>

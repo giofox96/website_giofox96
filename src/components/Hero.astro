@@ -1,0 +1,28 @@
+---
+import profile from '../data/profile.json';
+---
+<div class="hero">
+  <h1>I design <em>rules</em>, not just forms.</h1>
+  <p class="lede">
+    <strong>{profile.name}, architect and computational designer.</strong>{' '}
+    Trained at Politecnico di Bari and NYIT, with field experience in heritage survey and rural restoration.
+    Now a technical architect leading parametric modelling, building models that turn site, climate and structure into form.
+  </p>
+  <div class="stage">
+    <canvas id="field" role="img" aria-label="Parametric vector field: a grid of segments rotating around attractor points"></canvas>
+    <div class="controls">
+      <label class="ctl" for="p-cell"><span class="row label"><span>Grid step</span><output id="o-cell" class="mono">26 px</output></span><input id="p-cell" type="range" min="14" max="48" step="2" value="26" /></label>
+      <label class="ctl" for="p-amp"><span class="row label"><span>Rotation amplitude</span><output id="o-amp" class="mono">1.0</output></span><input id="p-amp" type="range" min="0.2" max="2" step="0.1" value="1" /></label>
+      <label class="ctl" for="p-wave"><span class="row label"><span>Wavelength</span><output id="o-wave" class="mono">110 px</output></span><input id="p-wave" type="range" min="40" max="260" step="10" value="110" /></label>
+    </div>
+    <div class="cap mono">
+      <span>Vector field, 2 attractors. Move the cursor to add a third.</span>
+      <span><b id="count">0</b> elements</span>
+    </div>
+  </div>
+</div>
+<script>
+  import { mountField } from '../scripts/field';
+  const cv = document.getElementById('field');
+  if (cv instanceof HTMLCanvasElement) mountField(cv);
+</script>

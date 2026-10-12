@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://giofox96.github.io/website_giofox96/sitemap-index.xml

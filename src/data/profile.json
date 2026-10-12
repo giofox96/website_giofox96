@@ -1,0 +1,36 @@
+{
+  "name": "Giovanni Carlo Volpe",
+  "role": "Architect and computational designer",
+  "location": "Puglia, Italy",
+  "email": "giofox96@gmail.com",
+  "links": [
+    { "label": "LinkedIn", "url": "https://www.linkedin.com/in/giofox9627010/" },
+    { "label": "Instagram", "url": "https://www.instagram.com/giofox96/" }
+  ],
+  "languages": [
+    { "name": "Italian", "level": "Native" },
+    { "name": "English", "level": "B2 First, Cambridge" }
+  ],
+  "experience": [
+    { "period": "2025 –", "role": "Technical architect", "where": "Orion Design and Implementation LLC", "work": "Parametric modelling and interior design" },
+    { "period": "2023–25", "role": "Architect", "where": "Bolko von Schweinichen Studio, Florence", "work": "Urban recovery plan for a village near Siena to become a luxury resort; survey and restoration of rural Tuscan buildings" },
+    { "period": "2022–23", "role": "Consultant", "where": "HCC Site Restoration LLC, AlUla, Saudi Arabia", "work": "AlUla Urban Heritage Survey for the Royal Commission for AlUla: field survey, inventory, conservation studies and reports" },
+    { "period": "2022", "role": "Intern", "where": "Heliopolis 21 Architects", "work": "Research on clay 3D printing, upcycling and bioreceptive surfaces, with Alessandro Melis" },
+    { "period": "2022", "role": "Visiting student", "where": "New York Institute of Technology", "work": "Research for the master's thesis on the South Bronx" }
+  ],
+  "education": [
+    { "period": "", "role": "MaCAD, Master in Advanced Computation for Architecture & Design", "where": "IAAC, Barcelona", "work": "" },
+    { "period": "2023", "role": "Licensed architect", "where": "Italian State Examination", "work": "" },
+    { "period": "2017–22", "role": "M.Arch", "where": "Politecnico di Bari", "work": "110/110 cum laude" }
+  ],
+  "exhibitions": [
+    { "year": "2022", "title": "Creative Italy", "where": "Italian Embassy, Washington DC", "note": "Curated by Maria Perbellini and Alessandro Melis" },
+    { "year": "2022", "title": "Upcycling", "where": "Italian Cultural Institute, New York", "note": "Curated by Maria Perbellini and Alessandro Melis" },
+    { "year": "2022", "title": "Honourable mention", "where": "Magna PT garden competition, Modugno", "note": "" }
+  ],
+  "tools": [
+    { "level": "Advanced", "items": ["Rhino + Grasshopper", "Lumion", "Photoshop", "QGIS", "AutoCAD", "MS Office"] },
+    { "level": "Intermediate", "items": ["Revit + Dynamo", "Illustrator", "InDesign", "SketchUp", "ArcGIS"] },
+    { "level": "Basic", "items": ["Archicad", "Premiere", "After Effects"] }
+  ]
+}

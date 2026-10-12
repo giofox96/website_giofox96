@@ -1,0 +1,41 @@
+---
+import { Picture } from 'astro:assets';
+import { projectUrl, type Project } from '../lib';
+
+interface Props {
+  project: Project;
+  lead?: boolean;
+}
+const { project, lead = false } = Astro.props;
+const d = project.data;
+const meta = [d.type, d.context, d.location, String(d.year)].filter(Boolean);
+---
+<article class="card">
+  <Picture
+    class="thumb"
+    src={d.cover}
+    alt={d.coverAlt}
+    formats={['avif', 'webp']}
+    fallbackFormat="jpg"
+    widths={[480, 800, 1200]}
+    sizes={lead ? '(min-width: 1000px) 580px, 100vw' : '(min-width: 1000px) 380px, (min-width: 640px) 50vw, 100vw'}
+    loading="lazy"
+  />
+  <h3><a href={projectUrl(project)}>{d.title}{d.subtitle && lead ? `, ${d.subtitle}` : ''}</a></h3>
+  <div class="meta mono">{meta.map((m) => <span>{m}</span>)}</div>
+  <p>{d.summary}</p>
+  {lead && d.workflow.length > 0 && (
+    <>
+      <ol class="flow" aria-label={d.workflowTitle}>
+        {d.workflow.map((s, i) => (
+          <li>
+            {s.image && <Picture src={s.image} alt="" formats={['webp']} fallbackFormat="jpg" widths={[120, 240]} sizes="64px" loading="lazy" />}
+            <span>{i + 1}</span>
+          </li>
+        ))}
+      </ol>
+      <p class="mono flow-text">{d.workflow.map((s) => s.label).join(' → ')}</p>
+    </>
+  )}
+  {d.tags.length > 0 && <div class="tags">{d.tags.map((t) => <span>{t}</span>)}</div>}
+</article>
