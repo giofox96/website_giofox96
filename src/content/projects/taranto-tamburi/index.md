@@ -8,6 +8,7 @@ type: Urban regeneration and densification
 context: Politecnico di Bari
 location: Tamburi, Taranto
 summary: Filling the urban voids between public housing blocks, a transport hub that overcomes the drop to the sea, and a colonnade that links church, mall and station.
+team: [Giovanni Carlo Volpe, Aurora Perta]
 cover: ./cover.jpg
 coverAlt: Axonometric drawing of the new blocks and squares in the Tamburi district
 gallery:

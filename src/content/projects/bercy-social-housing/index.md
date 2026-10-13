@@ -11,6 +11,7 @@ location: Paris
 summary: An abandoned freight yard near La Rapée turned into a 15-minute district, with modular micro-housing units set inside renovated industrial sheds.
 link: https://prixw.com/prix-w-2023-fr
 linkLabel: Prix W 2023 competition
+team: [Giovanni Carlo Volpe, Aurora Perta]
 cover: ./cover.jpg
 coverAlt: Aerial view of the renovated freight yard and its sheds along the Seine
 gallery:

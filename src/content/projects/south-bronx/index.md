@@ -10,6 +10,7 @@ context: Politecnico di Bari, research at NYIT
 location: Bronx, New York
 summary: A new waterfront for Mott Haven and Melrose, with a reused warehouse, a market hall, a mixed-use building and a terraced edge against flooding. The volumes are shaped by solar and wind analysis and built in glulam, CLT and DLT.
 tags: [Glulam, CLT, DLT]
+team: [Giovanni Carlo Volpe, Aurora Perta]
 cover: ./cover.jpg
 coverAlt: Aerial view of the timber complex around a raised green courtyard on the waterfront
 workflowTitle: Concept

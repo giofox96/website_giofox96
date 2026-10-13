@@ -10,7 +10,7 @@ type: AI agent, layout search
 context: MaCAD, IAAC
 summary: A conversational copilot that finds the floor plan that fits the way a household lives, using semantic descriptions, room graphs and an agent that explains its choices.
 tags: [Python, PlanFinder, HDBSCAN, Grasshopper, RGraphLib, LLM agents]
-team: [Elena Corio, Marina Osmolovska, Giovanni Carlo Volpe, Andrea Cutroni, Symon Kipekemi]
+team: [Elena Corio, Marina Osmolovska, Giovanni Carlo Volpe, Andrea Cutroni, Symon Kipkemei]
 course: AIA Studio
 faculty: João M. Silva, Bao Trinh, Scott Lebow
 link: https://blog.iaac.net/inhabit-rethinking-residential-layout-search-with-spatial-intelligence/

@@ -8,6 +8,7 @@ type: Landscape, xeriscaping
 context: Competition, honourable mention
 location: Modugno, Bari
 summary: The garden of the Magna PT headquarters in Modugno, a sequence of plazas linked by an accessible path, with natural stone and low-water planting.
+team: [Giovanni Carlo Volpe, Aurora Perta]
 cover: ./cover.jpg
 coverAlt: A paved plaza with gravel beds of cacti and succulents, an olive tree in a planter and a timber pergola in front of the Magna PT headquarters
 gallery:

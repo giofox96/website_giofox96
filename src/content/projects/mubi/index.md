@@ -10,6 +10,7 @@ context: Politecnico di Bari
 location: Gran Marrone quarry, Ofanto Valley Park
 summary: A museum set in the disused Gran Marrone marble quarry. Its form takes after the crystal structure of pyrite, carried by a space truss whose beams follow the edges of icosahedra.
 tags: [Rhino, Grasshopper, Space truss]
+team: [Giovanni Carlo Volpe, Aurora Perta, Dalila Nugnes, Martina Lullo, Ludovica Persano, Lucrezia Candita]
 cover: ./cover.jpg
 coverAlt: The museum's faceted crystalline volumes in the quarry, a visitor walking on the path in front
 workflow:

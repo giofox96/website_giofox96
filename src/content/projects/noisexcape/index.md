@@ -11,7 +11,7 @@ context: MaCAD, IAAC
 location: Barcelona
 summary: Street-level noise in Barcelona predicted from OpenStreetMap and space syntax metrics, with accuracy raised from 49% to 70% and models tested in five other European cities.
 tags: [XGBoost, SHAP, OpenStreetMap, Space syntax]
-team: [Elena Corio, Andrea Cutroni, Giovanni Carlo Volpe, Symon Kipekemi]
+team: [Elena Corio, Andrea Cutroni, Giovanni Carlo Volpe, Symon Kipkemei]
 course: Data Encoding
 faculty: Gabriella Rossi, Georgios Bekakos
 link: https://blog.iaac.net/noisexcape-can-open-data-help-us-predict-urban-noise/
