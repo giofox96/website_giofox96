@@ -19,6 +19,10 @@ const projects = defineCollection({
       type: z.string(),
       context: z.string().optional(),
       location: z.string().optional(),
+      // [lat, lon] of the site, for the map of places on the home page.
+      coords: z.tuple([z.number(), z.number()]).optional(),
+      // Map label when the last part of `location` is not the place name.
+      city: z.string().optional(),
       summary: z.string(),
       tags: z.array(z.string()).default([]),
       // Group work: everyone on the team, plus the course and its faculty.

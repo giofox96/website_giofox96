@@ -8,6 +8,7 @@ order: 3
 type: Housing
 context: Prix W 2023, competition entry
 location: Paris
+coords: [48.835, 2.38]
 summary: An abandoned freight yard near La Rapée turned into a 15-minute district, with modular micro-housing units set inside renovated industrial sheds.
 link: https://prixw.com/prix-w-2023-fr
 linkLabel: Prix W 2023 competition

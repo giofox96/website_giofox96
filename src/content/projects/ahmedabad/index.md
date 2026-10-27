@@ -7,6 +7,8 @@ order: 2
 type: Mixed use, environmental analysis
 context: MaCAD, IAAC
 location: Ahmedabad, India
+coords: [23.02, 72.57]
+city: Ahmedabad
 summary: A mixed-use block on a 2,803 m² site, optimised in two phases from massing to shading to cut average incident radiation by 17%.
 tags: [Solar radiation, UTCI, Optimisation]
 team: [Giovanni Carlo Volpe, Nihan Malkoç, Sushmitha Ravi, Zeynep Sezen Dursun]

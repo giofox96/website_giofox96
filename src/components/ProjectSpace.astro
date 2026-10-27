@@ -1,0 +1,184 @@
+---
+// Project space: every project as a circle, placed by how much its themes and tags overlap with
+// the others (tag embedding + classical MDS), or on a timeline. The layout is computed at build time.
+import { getImage } from 'astro:assets';
+import { allProjects, projectUrl } from '../lib';
+import { embed, relax, themes, themesOf, type Item } from '../scripts/embedding';
+
+const projects = await allProjects();
+const items: Item[] = projects.map((p) => ({
+  id: p.id,
+  text: [p.data.title, p.data.type, ...p.data.tags],
+  tags: p.data.tags,
+  category: p.data.category,
+  year: p.data.year,
+}));
+const emb = embed(items);
+const radius = (i: number) => (projects[i].data.highlight ? 54 : projects[i].data.featured ? 44 : 32);
+const radii = items.map((_, i) => radius(i));
+const years = items.map((it) => it.year);
+const y0 = Math.min(...years), y1 = Math.max(...years);
+
+const palette = ['#0EA5B7', '#D97706', '#C026D3', '#16A34A', '#4F5BFF', '#EA580C', '#0D9488', '#E11D48'];
+const color = Object.fromEntries(themes.map((t, i) => [t.id, palette[i % palette.length]]));
+const nodeThemes = items.map(themesOf);
+
+type Box = { w: number; h: number; pad: number };
+// Wide: similarity on both axes, timeline left to right. Tall (phones): timeline top to bottom, newest first.
+function layout(box: Box, tall: boolean) {
+  const s = tall ? 1.1 : 1;
+  const r = radii.map((x) => x * s);
+  const inner = (v: number, len: number, rr = 0) => box.pad + 70 + ((v + 1) / 2) * (len - 2 * box.pad - 140 - rr);
+  const simT = emb.map((p) => ({ x: inner(tall ? p.y : p.x, box.w), y: inner(tall ? p.x : p.y, box.h) }));
+  const sim = relax(simT, r, box);
+  const t = (y: number) => (y1 - y0 ? (y - y0) / (y1 - y0) : 0.5) * 2 - 1;
+  const timeT = emb.map((p, i) =>
+    tall ? { x: inner(p.y, box.w), y: inner(-t(years[i]), box.h) } : { x: inner(t(years[i]), box.w), y: inner(p.y, box.h) },
+  );
+  // Swap axes for relax so the year axis is the pinned one.
+  const swap = (q: { x: number; y: number }) => ({ x: q.y, y: q.x });
+  const time = tall
+    ? relax(timeT.map(swap), r, { w: box.h, h: box.w, pad: box.pad }, 0.3).map(swap)
+    : relax(timeT, r, box, 0.3);
+  const ticks = Array.from({ length: y1 - y0 + 1 }, (_, k) => {
+    const y = y0 + k;
+    return { year: y, at: tall ? inner(-t(y), box.h) : inner(t(y), box.w) };
+  });
+  // A cross for each theme at the mean position of its projects.
+  const marks = themes
+    .map((th) => {
+      const idx = nodeThemes.flatMap((ts, i) => (ts.includes(th.id) ? [i] : []));
+      if (!idx.length) return null;
+      const m = (k: 'x' | 'y') => idx.reduce((sum, i) => sum + sim[i][k], 0) / idx.length;
+      return { ...th, x: Math.round(m('x')), y: Math.round(m('y')), n: idx.length };
+    })
+    .filter((m) => m !== null);
+  return { box, r, sim, time, ticks, marks, tall };
+}
+
+const views = [layout({ w: 1000, h: 600, pad: 16 }, false), layout({ w: 600, h: 1000, pad: 16 }, true)];
+
+const covers = await Promise.all(projects.map((p) => getImage({ src: p.data.cover, width: 240, format: 'webp' })));
+const counts = themes.map((t) => ({ ...t, n: nodeThemes.filter((ts) => ts.includes(t.id)).length })).filter((t) => t.n);
+// Oldest first, so the circles appear in the order the work was done.
+const order = items.map((_, i) => i).sort((a, b) => years[a] - years[b]);
+const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
+---
+<div class="space" id="space">
+  <div class="space-bar">
+    <div class="space-filters" role="group" aria-label="Highlight a theme">
+      {counts.map((t) => (
+        <button type="button" class="chip" data-theme={t.id} aria-pressed="false" style={`--c:${color[t.id]}`}>
+          <i aria-hidden="true">+</i>{t.label} <span>{t.n}</span>
+        </button>
+      ))}
+    </div>
+    <button type="button" class="chip space-mode" aria-pressed="false">Timeline</button>
+  </div>
+  {views.map((v, vi) => (
+    <svg class:list={['space-svg', v.tall ? 'tall' : 'wide']} viewBox={`0 0 ${v.box.w} ${v.box.h}`} role="group" aria-label="Projects placed by shared themes and tags">
+      <defs>
+        <clipPath id={`disc-${vi}`} clipPathUnits="objectBoundingBox"><circle cx=".5" cy=".5" r=".5" /></clipPath>
+      </defs>
+      <g class="axis" aria-hidden="true">
+        {v.ticks.map((tk) =>
+          v.tall ? (
+            <g transform={`translate(0 ${tk.at})`}><line x1="0" x2="28" /><text x="4" y="-6">{tk.year}</text></g>
+          ) : (
+            <g transform={`translate(${tk.at} ${v.box.h})`}><line y1="0" y2="-28" /><text x="6" y="-16">{tk.year}</text></g>
+          ),
+        )}
+      </g>
+      {projects.map((p, i) => {
+        const r = v.r[i];
+        const first = nodeThemes[i][0];
+        return (
+          <a
+            href={projectUrl(p)}
+            class="node"
+            data-themes={nodeThemes[i].join(' ')}
+            data-title={p.data.title}
+            data-meta={`${p.data.year} · ${p.data.type}`}
+            data-tags={p.data.tags.join(' · ')}
+            aria-label={`${p.data.title}, ${p.data.year}`}
+            style={`--ex:${v.sim[i].x};--ey:${v.sim[i].y};--tx:${v.time[i].x};--ty:${v.time[i].y};--d:${delay[i]}ms;--c:${first ? color[first] : 'var(--muted)'}`}
+          >
+            <g class="bub">
+              <circle r={r + 3} class="halo" />
+              <image href={covers[i].src} x={-r} y={-r} width={r * 2} height={r * 2} preserveAspectRatio="xMidYMid slice" clip-path={`url(#disc-${vi})`} />
+              <circle r={r} class="ring" />
+            </g>
+          </a>
+        );
+      })}
+      <g class="marks" aria-hidden="true">
+        {v.marks.map((m) => (
+          <g class="mark" data-theme={m.id} transform={`translate(${m.x} ${m.y})`} style={`--c:${color[m.id]}`}>
+            <path d="M-9 0H9M0 -9V9" />
+            <text x="13" y="4">{m.label}</text>
+          </g>
+        ))}
+      </g>
+    </svg>
+  ))}
+  <div class="space-tip mono" role="status" aria-live="polite" hidden></div>
+  <p class="space-cap mono">
+    <span>Project space · themes and tags embedded with classical MDS: close circles share more.</span>
+    <span>{projects.length} projects · {counts.length} themes</span>
+  </p>
+</div>
+
+<script>
+  const root = document.getElementById('space');
+  if (root) {
+    root.classList.add('js');
+    const tip = root.querySelector<HTMLElement>('.space-tip')!;
+    // Start the pop-in when the space scrolls into view.
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { root.classList.add('on'); io.disconnect(); }
+    }, { threshold: 0.25 });
+    io.observe(root);
+
+    const mode = root.querySelector<HTMLButtonElement>('.space-mode')!;
+    mode.addEventListener('click', () => {
+      const on = root.classList.toggle('is-time');
+      mode.setAttribute('aria-pressed', String(on));
+    });
+
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('.space-filters .chip')];
+    chips.forEach((c) =>
+      c.addEventListener('click', () => {
+        const same = root.dataset.filter === c.dataset.theme;
+        chips.forEach((x) => x.setAttribute('aria-pressed', 'false'));
+        if (same) delete root.dataset.filter;
+        else { root.dataset.filter = c.dataset.theme; c.setAttribute('aria-pressed', 'true'); }
+        root.querySelectorAll<SVGElement>('.node, .mark').forEach((n) => {
+          const ts = (n.dataset.themes ?? n.dataset.theme ?? '').split(' ');
+          n.classList.toggle('dim', !!root.dataset.filter && !ts.includes(root.dataset.filter));
+        });
+      }),
+    );
+
+    const show = (n: SVGElement) => {
+      const box = root.getBoundingClientRect();
+      const b = n.getBoundingClientRect();
+      tip.innerHTML = '';
+      const t = document.createElement('strong');
+      t.textContent = n.dataset.title ?? '';
+      const m = document.createElement('span');
+      m.textContent = n.dataset.meta ?? '';
+      tip.append(t, m);
+      if (n.dataset.tags) { const g = document.createElement('span'); g.textContent = n.dataset.tags; tip.append(g); }
+      tip.hidden = false;
+      const x = Math.min(b.right - box.left + 8, box.width - tip.offsetWidth - 8);
+      tip.style.left = `${Math.max(8, x)}px`;
+      tip.style.top = `${b.top - box.top}px`;
+    };
+    root.querySelectorAll<SVGElement>('.node').forEach((n) => {
+      n.addEventListener('pointerenter', () => show(n));
+      n.addEventListener('focus', () => show(n));
+      n.addEventListener('pointerleave', () => { tip.hidden = true; });
+      n.addEventListener('blur', () => { tip.hidden = true; });
+    });
+  }
+</script>
