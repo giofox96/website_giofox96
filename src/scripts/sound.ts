@@ -253,6 +253,7 @@ async function start() {
       loop = ctx!.createBufferSource();
       loop.buffer = buf;
       loop.loop = true;
+      loop.loopEnd = STEP * 16 * 8; // 8 bars; Opus pads the file end slightly
       loop.connect(master);
       loop.start();
     }
@@ -263,7 +264,7 @@ async function start() {
     next = ctx!.currentTime + 0.1;
     timer = window.setInterval(tick, 25);
   }
-  fade(useLoop ? 1 : 0.8, 2);
+  fade(0.8, 2);
 }
 
 function stop() {
