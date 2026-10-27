@@ -63,6 +63,10 @@ h1 em { font-style: normal; color: var(--accent); }
 .stage { border: 1px solid var(--line); background: var(--surface); }
 #terrain { display: block; width: 100%; height: clamp(300px, 48vw, 560px); touch-action: pan-y; cursor: crosshair; }
 .cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); }
+.cap-r { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.modes { display: inline-flex; }
+.modes .chip { padding: 3px 9px; }
+.modes .chip + .chip { border-left: 0; }
 .cap b { color: var(--accent); font-weight: 500; font-variant-numeric: tabular-nums; }
 .credit { margin: 0; padding: 0 16px 10px; color: var(--muted); font-size: 11px; }
 

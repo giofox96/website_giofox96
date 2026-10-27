@@ -1,5 +1,6 @@
 // Contour map from real elevation data (public/terrain/contours.json, see scripts/terrain.py).
 // The contour under the pointer is traced in the accent colour; when idle, the traced level sweeps the terrain.
+// With data-mode="ascii" on the canvas the same terrain is drawn as a grid of monospace characters.
 
 type Grid = { w: number; h: number; z: Float32Array; min: number; max: number; mpp: number; cx: number; cy: number };
 type Seg = (x1: number, y1: number, x2: number, y2: number, level: number) => void;
@@ -108,6 +109,9 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   let W = 0, H = 0, dpr = 1, s = 1, ox = 0, oy = 0, vmin = g.min, vmax = g.max;
   let probe: { x: number; y: number } | null = null;
   let raf = 0, visible = true, idleSince = 0;
+  let ascii = cv.dataset.mode === 'ascii';
+  // Character cell in CSS pixels; JetBrains Mono is about 0.6 em wide.
+  const CW = 8.4, CH = 14;
 
   const colours = () => {
     const cs = getComputedStyle(root);
@@ -200,6 +204,53 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
       b.restore();
     }
 
+    decor(b, c);
+  }
+
+  /** Contour direction as a character: the line runs across the gradient. */
+  const glyph = (gx: number, gy: number) => {
+    const a = ((Math.atan2(gy, gx) + Math.PI / 2) % Math.PI + Math.PI) % Math.PI;
+    return a < Math.PI / 8 || a >= Math.PI * 7 / 8 ? '-' : a < Math.PI * 3 / 8 ? '\\' : a < Math.PI * 5 / 8 ? '|' : '/';
+  };
+
+  /** Visit every character cell with its elevation range, centre value and gradient. */
+  function cells(fn: (x: number, y: number, lo: number, hi: number, z: number, gx: number, gy: number) => void) {
+    const cols = Math.ceil(W / CW), rows = Math.ceil(H / CH);
+    for (let r = 0; r < rows; r++) for (let q = 0; q < cols; q++) {
+      const x = q * CW, y = r * CH;
+      const at = (px: number, py: number) => sample(px / s + ox, py / s + oy);
+      const a = at(x, y), b = at(x + CW, y), c = at(x, y + CH), d = at(x + CW, y + CH);
+      fn(x + CW / 2, y + CH / 2, Math.min(a, b, c, d), Math.max(a, b, c, d), (a + b + c + d) / 4, (b + d - a - c) / 2, (c + d - a - b) / 2);
+    }
+  }
+
+  function drawAscii() {
+    const c = colours();
+    const b = bctx;
+    b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    b.clearRect(0, 0, W, H);
+    b.font = '400 13px "JetBrains Mono", ui-monospace, monospace';
+    b.textAlign = 'center'; b.textBaseline = 'middle';
+    const ramp = '  ..,,::';
+    const every = INTERVAL * 5;
+    cells((x, y, lo, hi, z, gx, gy) => {
+      const major = Math.floor(hi / every) !== Math.floor(lo / every);
+      const minor = Math.floor(hi / INTERVAL) !== Math.floor(lo / INTERVAL);
+      let ch: string;
+      if (major) { ch = glyph(gx, gy); b.fillStyle = c.ink; b.globalAlpha = .9; }
+      else if (minor) { ch = '·'; b.fillStyle = c.muted; b.globalAlpha = .5; }
+      else {
+        const u = (z - vmin) / (vmax - vmin || 1);
+        ch = ramp[Math.min(ramp.length - 1, Math.floor(u * ramp.length))];
+        b.fillStyle = z >= TINT ? c.accent : c.muted; b.globalAlpha = z >= TINT ? .55 : .3;
+      }
+      if (ch !== ' ') b.fillText(ch, x, y);
+    });
+    b.globalAlpha = 1;
+    decor(b, c);
+  }
+
+  function decor(b: CanvasRenderingContext2D, c: ReturnType<typeof colours>) {
     // North arrow and a 500 m scale bar.
     b.fillStyle = c.ink; b.strokeStyle = c.ink; b.lineWidth = 1.2;
     b.beginPath(); b.moveTo(W - 22, 34); b.lineTo(W - 22, 14); b.stroke();
@@ -227,12 +278,23 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
       const u = .5 - .5 * Math.cos(((t - idleSince) / 16000) * Math.PI * 2 + Math.PI * .35);
       level = vmin + 2 + (vmax - vmin - 4) * u;
     }
-    const line = new Path2D();
-    trace(S, g.w, g.h, 0, 1, level, (x1, y1, x2, y2) => {
-      line.moveTo((x1 - ox) * s, (y1 - oy) * s); line.lineTo((x2 - ox) * s, (y2 - oy) * s);
-    });
-    ctx!.lineCap = 'round';
-    ctx!.strokeStyle = c.accent; ctx!.lineWidth = 2.2; ctx!.stroke(line);
+    if (ascii) {
+      // The traced contour as accent characters over a cleared cell.
+      ctx!.font = '600 13px "JetBrains Mono", ui-monospace, monospace';
+      ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle';
+      cells((x, y, lo, hi, _z, gx, gy) => {
+        if (level < lo || level > hi) return;
+        ctx!.fillStyle = c.surface; ctx!.fillRect(x - CW / 2, y - CH / 2, CW, CH);
+        ctx!.fillStyle = c.accent; ctx!.fillText(glyph(gx, gy), x, y);
+      });
+    } else {
+      const line = new Path2D();
+      trace(S, g.w, g.h, 0, 1, level, (x1, y1, x2, y2) => {
+        line.moveTo((x1 - ox) * s, (y1 - oy) * s); line.lineTo((x2 - ox) * s, (y2 - oy) * s);
+      });
+      ctx!.lineCap = 'round';
+      ctx!.strokeStyle = c.accent; ctx!.lineWidth = 2.2; ctx!.stroke(line);
+    }
 
     const text = `${Math.round(level)} m`;
     if (readout) readout.textContent = text;
@@ -252,7 +314,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   const animating = () => !probe && !reduce;
   const loop = (t: number) => { frame(t); raf = visible && animating() ? requestAnimationFrame(loop) : 0; };
   const request = () => { if (!raf) raf = requestAnimationFrame(loop); };
-  const rebuild = () => { drawBase(); request(); };
+  const rebuild = () => { if (ascii) drawAscii(); else drawBase(); request(); };
 
   new IntersectionObserver((e) => { visible = e[0].isIntersecting; if (visible) request(); }).observe(cv);
   const setProbe = (e: PointerEvent) => {
@@ -270,6 +332,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     rt = window.setTimeout(() => { layout(); rebuild(); }, 120);
   });
   new MutationObserver(rebuild).observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+  new MutationObserver(() => { ascii = cv.dataset.mode === 'ascii'; rebuild(); }).observe(cv, { attributes: true, attributeFilter: ['data-mode'] });
   matchMedia('(prefers-color-scheme: dark)').addEventListener('change', rebuild);
   await document.fonts?.ready;
   layout(); rebuild();

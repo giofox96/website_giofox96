@@ -18,7 +18,12 @@ import { url } from '../lib';
     ></canvas>
     <div class="cap mono">
       <span>Contours from real elevation data, 2 m interval. Move across the map to trace one.</span>
-      <span>Traced <b id="elev">415 m</b></span>
+      <span class="cap-r">
+        <span>Traced <b id="elev">415 m</b></span>
+        <span class="modes" role="group" aria-label="Drawing">
+          <button type="button" class="chip" data-mode="lines" aria-pressed="true">Lines</button><button type="button" class="chip" data-mode="ascii" aria-pressed="false">ASCII</button>
+        </span>
+      </span>
     </div>
     <p class="credit mono">Elevation: Mapzen Terrain Tiles, from SRTM and EU-DEM (Copernicus).</p>
   </div>
@@ -29,5 +34,13 @@ import { url } from '../lib';
   if (cv instanceof HTMLCanvasElement) {
     // Without the elevation data there is nothing to draw: hide the map rather than show an empty frame.
     mountTerrain(cv).catch(() => { cv.closest<HTMLElement>('.stage')!.hidden = true; });
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.stage .modes button');
+    const pick = (mode: string) => {
+      cv.dataset.mode = mode;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.mode === mode)));
+      try { localStorage.setItem('pf-terrain', mode); } catch { /* storage blocked */ }
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => pick(b.dataset.mode!)));
+    try { const m = localStorage.getItem('pf-terrain'); if (m === 'ascii') pick(m); } catch { /* storage blocked */ }
   }
 </script>
