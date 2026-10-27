@@ -99,9 +99,9 @@ const kinds: { id: Kind; label: string }[] = [
 ---
 <div class="atlas" id="atlas" data-view="world">
   <div class="space-bar">
-    <ul class="atlas-key mono" aria-label="Legend">
-      {kinds.map((k) => <li><svg viewBox="-8 -8 16 16" aria-hidden="true"><Pin kind={k.id} /></svg>{k.label}</li>)}
-      <li><svg viewBox="0 0 24 8" aria-hidden="true"><path d="M1 4h22" class="route" /></svg>Path, 2017 to today</li>
+    <ul class="atlas-key mono" aria-label="Legend: pick one to highlight it">
+      {kinds.map((k) => <li><button type="button" data-focus={k.id} aria-pressed="false"><svg viewBox="-8 -8 16 16" aria-hidden="true"><Pin kind={k.id} /></svg>{k.label}</button></li>)}
+      <li><button type="button" data-focus="path" aria-pressed="false"><svg viewBox="0 0 24 8" aria-hidden="true"><path d="M1 4h22" class="route" /></svg>Path, 2017 to today</button></li>
     </ul>
     <div class="atlas-ctl">
       <div role="group" aria-label="Map extent">
@@ -132,7 +132,9 @@ const kinds: { id: Kind; label: string }[] = [
           data-x={p.x}
           data-y={p.y}
           data-city={p.city}
+          data-kinds={[...new Set(p.entries.map((e) => e.kind))].join(' ')}
         >
+          <line class="lead" x1="0" y1="0" x2="0" y2="0" />
           <circle r="14" class="hit" />
           <g class="mk"><Pin kind={p.kind} /></g>
           <text x="9" y="4" class:list={{ extra: !v.labelled.has(p.city) }}>{p.city}</text>
@@ -159,11 +161,27 @@ const kinds: { id: Kind; label: string }[] = [
     }, { threshold: 0.3 });
     io.observe(root);
 
+    root.classList.add('js');
     root.querySelectorAll<HTMLButtonElement>('button[data-view]').forEach((b) =>
       b.addEventListener('click', () => {
         root.dataset.view = b.dataset.view;
         root.querySelectorAll('button[data-view]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        zooms.get(b.dataset.view!)?.(1); // re-place the labels now that this map is visible and measurable
         tip.hidden = true;
+      }),
+    );
+
+    // Legend as a filter: one kind (or the path) stays lit, the rest dims. Click it again to clear.
+    const keys = [...root.querySelectorAll<HTMLButtonElement>('button[data-focus]')];
+    keys.forEach((b) =>
+      b.addEventListener('click', () => {
+        const same = root.dataset.focus === b.dataset.focus;
+        if (same) delete root.dataset.focus;
+        else root.dataset.focus = b.dataset.focus;
+        keys.forEach((x) => x.setAttribute('aria-pressed', String(!same && x === b)));
+        root.querySelectorAll<SVGGElement>('.pin').forEach((p) =>
+          p.classList.toggle('lit', !same && (p.dataset.kinds ?? '').split(' ').includes(b.dataset.focus!)),
+        );
       }),
     );
 
@@ -172,24 +190,43 @@ const kinds: { id: Kind; label: string }[] = [
     const zooms = new Map<string, (f: number, at?: DOMPoint) => void>();
     root.querySelectorAll<SVGSVGElement>('.atlas-svg').forEach((svg) => {
       const g = svg.querySelector<SVGGElement>('.zoom')!;
-      // Pins whose label shows at full extent come first, so they keep it when others compete.
-      const pins = [...svg.querySelectorAll<SVGGElement>('.pin')].sort(
-        (a, b) => +!!a.querySelector('.extra') - +!!b.querySelector('.extra'),
-      );
+      const pins = [...svg.querySelectorAll<SVGGElement>('.pin')];
       const { width: W, height: H } = svg.viewBox.baseVal;
       let k = 1, x = 0, y = 0;
       const apply = () => {
         x = Math.min(0, Math.max(W - W * k, x));
         y = Math.min(0, Math.max(H - H * k, y));
         g.setAttribute('transform', `translate(${x} ${y}) scale(${k})`);
-        // Same collision rule as the build-time labels: skip a label that would sit on one already placed.
-        const placed: { x: number; y: number }[] = [];
-        for (const p of pins) {
-          const px = x + +p.dataset.x! * k, py = y + +p.dataset.y! * k;
-          p.setAttribute('transform', `translate(${px} ${py})`);
-          const free = placed.every((q) => Math.abs(q.x - px) > 80 || Math.abs(q.y - py) > 22);
-          if (free) placed.push({ x: px, y: py });
-          p.querySelector('text')!.style.display = free ? '' : 'none';
+        // Every label shows. Where marker + label boxes overlap, the pins are pushed apart (mostly
+        // vertically, since labels are wide) and a leader line runs back to the true location.
+        const shown = svg.clientWidth > 0;
+        const n = pins.map((p) => {
+          const t = p.querySelector('text')!;
+          const fs = parseFloat(getComputedStyle(t).fontSize) || 13;
+          const w = shown ? t.getComputedTextLength() : (t.textContent ?? '').length * fs * 0.6;
+          const ox = x + +p.dataset.x! * k, oy = y + +p.dataset.y! * k;
+          return { p, ox, oy, px: ox, py: oy, l: -8, r: 11 + w, h: fs * 0.7 + 2 };
+        });
+        for (let it = 0; it < 120; it++) {
+          for (let i = 0; i < n.length; i++) {
+            for (let j = i + 1; j < n.length; j++) {
+              const a = n[i], b = n[j];
+              const dx = Math.min(a.px + a.r, b.px + b.r) - Math.max(a.px + a.l, b.px + b.l);
+              const dy = Math.min(a.py + a.h, b.py + b.h) - Math.max(a.py - a.h, b.py - b.h);
+              if (dx <= 0 || dy <= 0) continue;
+              if (dy < dx) { const s = (a.py - b.py || i - j) < 0 ? -1 : 1; a.py += (s * dy) / 2; b.py -= (s * dy) / 2; }
+              else { const s = (a.px - b.px || i - j) < 0 ? -1 : 1; a.px += (s * dx) / 2; b.px -= (s * dx) / 2; }
+            }
+          }
+          // Pull back toward the true location, except in the last passes, which only separate.
+          if (it < 90) for (const q of n) { q.px += (q.ox - q.px) * 0.1; q.py += (q.oy - q.py) * 0.1; }
+        }
+        for (const q of n) {
+          q.p.setAttribute('transform', `translate(${q.px} ${q.py})`);
+          const lead = q.p.querySelector('.lead')!;
+          lead.setAttribute('x2', String(q.ox - q.px));
+          lead.setAttribute('y2', String(q.oy - q.py));
+          q.p.classList.toggle('moved', Math.hypot(q.ox - q.px, q.oy - q.py) > 3);
         }
         svg.classList.toggle('zoomed', k > 1);
         svg.style.setProperty('--k', String(k));
@@ -204,6 +241,7 @@ const kinds: { id: Kind; label: string }[] = [
         apply();
       };
       zooms.set(svg.dataset.view!, zoom);
+      apply();
       svg.addEventListener('wheel', (e) => {
         if (k === 1 && e.deltaY > 0) return; // let the page scroll when there is nothing to zoom out of
         e.preventDefault();
@@ -245,6 +283,8 @@ const kinds: { id: Kind; label: string }[] = [
     root.querySelectorAll<HTMLButtonElement>('button[data-zoom]').forEach((b) =>
       b.addEventListener('click', () => zooms.get(root.dataset.view!)?.({ in: 1.6, out: 1 / 1.6, reset: 0 }[b.dataset.zoom!]!)),
     );
+    // Label widths change once the web font arrives.
+    document.fonts.ready.then(() => zooms.forEach((z) => z(1)));
     // A drag that ends on a pin is a pan, not a click.
     root.addEventListener('click', (e) => { if (dragged) { e.stopPropagation(); dragged = false; } }, true);
 
