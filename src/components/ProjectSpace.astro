@@ -3,7 +3,7 @@
 // the others (tag embedding + classical MDS), or on a timeline. The layout is computed at build time.
 import { getImage } from 'astro:assets';
 import { allProjects, projectUrl } from '../lib';
-import { embed, relax, themes, themesOf, type Item } from '../scripts/embedding';
+import { embed, links, relax, themes, themesOf, type Item } from '../scripts/embedding';
 
 const projects = await allProjects();
 const items: Item[] = projects.map((p) => ({
@@ -22,6 +22,13 @@ const y0 = Math.min(...years), y1 = Math.max(...years);
 const palette = ['#0EA5B7', '#D97706', '#C026D3', '#16A34A', '#4F5BFF', '#EA580C', '#0D9488', '#E11D48'];
 const color = Object.fromEntries(themes.map((t, i) => [t.id, palette[i % palette.length]]));
 const nodeThemes = items.map(themesOf);
+// Wires between the most similar projects, coloured by the first theme they share.
+const wires = links(items).map((w) => ({ ...w, shared: nodeThemes[w.a].filter((t) => nodeThemes[w.b].includes(t)) }));
+const r1 = (v: number) => Math.round(v * 10) / 10;
+const arc = (p: { x: number; y: number }, q: { x: number; y: number }) => {
+  const k = 0.18, mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+  return `M${p.x} ${p.y}Q${r1(mx - (q.y - p.y) * k)} ${r1(my + (q.x - p.x) * k)} ${q.x} ${q.y}`;
+};
 
 type Box = { w: number; h: number; pad: number };
 // Wide: similarity on both axes, timeline left to right. Tall (phones): timeline top to bottom, newest first.
@@ -89,6 +96,18 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
           ),
         )}
       </g>
+      <g class="wires" aria-hidden="true">
+        {wires.map((w) => (
+          <path
+            class="wire"
+            d={arc(v.sim[w.a], v.sim[w.b])}
+            data-a={w.a}
+            data-b={w.b}
+            data-themes={w.shared.join(' ')}
+            style={`--c:${w.shared[0] ? color[w.shared[0]] : 'var(--muted)'};--w:${w.w.toFixed(2)}`}
+          />
+        ))}
+      </g>
       {projects.map((p, i) => {
         const r = v.r[i];
         const first = nodeThemes[i][0];
@@ -96,6 +115,7 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
           <a
             href={projectUrl(p)}
             class="node"
+            data-i={i}
             data-themes={nodeThemes[i].join(' ')}
             data-title={p.data.title}
             data-meta={`${p.data.year} · ${p.data.type}`}
@@ -103,10 +123,13 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
             aria-label={`${p.data.title}, ${p.data.year}`}
             style={`--ex:${v.sim[i].x};--ey:${v.sim[i].y};--tx:${v.time[i].x};--ty:${v.time[i].y};--d:${delay[i]}ms;--c:${first ? color[first] : 'var(--muted)'}`}
           >
-            <g class="bub">
-              <circle r={r + 3} class="halo" />
-              <image href={covers[i].src} x={-r} y={-r} width={r * 2} height={r * 2} preserveAspectRatio="xMidYMid slice" clip-path={`url(#disc-${vi})`} />
-              <circle r={r} class="ring" />
+            <g class="lens">
+              <circle r={r} class="pulse" />
+              <g class="bub">
+                <circle r={r + 3} class="halo" />
+                <image href={covers[i].src} x={-r} y={-r} width={r * 2} height={r * 2} preserveAspectRatio="xMidYMid slice" clip-path={`url(#disc-${vi})`} />
+                <circle r={r} class="ring" />
+              </g>
             </g>
           </a>
         );
@@ -152,14 +175,20 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
         chips.forEach((x) => x.setAttribute('aria-pressed', 'false'));
         if (same) delete root.dataset.filter;
         else { root.dataset.filter = c.dataset.theme; c.setAttribute('aria-pressed', 'true'); }
-        root.querySelectorAll<SVGElement>('.node, .mark').forEach((n) => {
+        root.querySelectorAll<SVGElement>('.node, .mark, .wire').forEach((n) => {
           const ts = (n.dataset.themes ?? n.dataset.theme ?? '').split(' ');
           n.classList.toggle('dim', !!root.dataset.filter && !ts.includes(root.dataset.filter));
         });
       }),
     );
 
+    const wireEls = [...root.querySelectorAll<SVGElement>('.wire')];
+    const hot = (i?: string) => {
+      root.classList.toggle('has-hot', i !== undefined);
+      wireEls.forEach((w) => w.classList.toggle('hot', w.dataset.a === i || w.dataset.b === i));
+    };
     const show = (n: SVGElement) => {
+      hot(n.dataset.i);
       const box = root.getBoundingClientRect();
       const b = n.getBoundingClientRect();
       tip.innerHTML = '';
@@ -177,8 +206,65 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
     root.querySelectorAll<SVGElement>('.node').forEach((n) => {
       n.addEventListener('pointerenter', () => show(n));
       n.addEventListener('focus', () => show(n));
-      n.addEventListener('pointerleave', () => { tip.hidden = true; });
-      n.addEventListener('blur', () => { tip.hidden = true; });
+      n.addEventListener('pointerleave', () => { tip.hidden = true; hot(); });
+      n.addEventListener('blur', () => { tip.hidden = true; hot(); });
     });
+
+    // Fish-eye lens and idle drift: each circle follows a spring toward a target scale and offset.
+    // Mouse only, and off for reduced motion; the static layout stays the source of truth.
+    if (matchMedia('(pointer: fine)').matches && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const K = 170, C = 14, R = 190; // spring stiffness, damping; lens radius in SVG units
+      const svgs = [...root.querySelectorAll<SVGSVGElement>('.space-svg')].map((svg) => ({
+        svg,
+        cursor: null as DOMPoint | null,
+        nodes: [...svg.querySelectorAll<SVGElement>('.node')].map((n) => ({
+          n, lens: n.querySelector<SVGGElement>('.lens')!, phase: Math.random() * 6.283,
+          x: 0, y: 0, s: 1, vx: 0, vy: 0, vs: 0,
+        })),
+      }));
+      svgs.forEach((v) => {
+        v.svg.addEventListener('pointermove', (e) => {
+          v.cursor = new DOMPoint(e.clientX, e.clientY).matrixTransform(v.svg.getScreenCTM()!.inverse());
+        });
+        v.svg.addEventListener('pointerleave', () => { v.cursor = null; });
+      });
+      let raf = 0, last = 0;
+      const tick = (now: number) => {
+        const dt = Math.min((now - (last || now)) / 1000, 0.05);
+        last = now;
+        const time = root.classList.contains('is-time');
+        for (const v of svgs) {
+          if (!v.svg.clientWidth) continue;
+          for (const o of v.nodes) {
+            const st = o.n.style;
+            const px = +st.getPropertyValue(time ? '--tx' : '--ex'), py = +st.getPropertyValue(time ? '--ty' : '--ey');
+            let tx = Math.sin(now * 0.0006 + o.phase) * 3, ty = Math.cos(now * 0.00042 + o.phase) * 3, ts = 1;
+            if (v.cursor) {
+              const dx = v.cursor.x - px, dy = v.cursor.y - py, f = Math.max(0, 1 - Math.hypot(dx, dy) / R) ** 2;
+              ts += 0.35 * f; tx += dx * 0.18 * f; ty += dy * 0.18 * f;
+            }
+            o.vx += ((tx - o.x) * K - o.vx * C) * dt; o.x += o.vx * dt;
+            o.vy += ((ty - o.y) * K - o.vy * C) * dt; o.y += o.vy * dt;
+            o.vs += ((ts - o.s) * K - o.vs * C) * dt; o.s += o.vs * dt;
+            o.lens.setAttribute('transform', `translate(${o.x.toFixed(2)} ${o.y.toFixed(2)}) scale(${o.s.toFixed(3)})`);
+          }
+        }
+        raf = requestAnimationFrame(tick);
+      };
+      // A random circle sends out a ring now and then, so the map looks alive at rest.
+      let ping = 0;
+      const run = (on: boolean) => {
+        cancelAnimationFrame(raf); clearInterval(ping); last = 0;
+        if (!on) return;
+        raf = requestAnimationFrame(tick);
+        ping = window.setInterval(() => {
+          const v = svgs.find((s) => s.svg.clientWidth);
+          const o = v?.nodes[Math.floor(Math.random() * v.nodes.length)];
+          if (!o || o.n.classList.contains('dim')) return;
+          o.n.classList.remove('ping'); void o.n.getBoundingClientRect(); o.n.classList.add('ping');
+        }, 1800);
+      };
+      new IntersectionObserver((es) => run(es[0].isIntersecting)).observe(root);
+    }
   }
 </script>
