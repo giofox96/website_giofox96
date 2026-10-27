@@ -199,34 +199,56 @@ const kinds: { id: Kind; label: string }[] = [
         x = Math.min(0, Math.max(W - W * k, x));
         y = Math.min(0, Math.max(H - H * k, y));
         g.setAttribute('transform', `translate(${x} ${y}) scale(${k})`);
-        // Pins stay on their true location. Each label, in priority order, takes the first side of its
-        // pin (right, left, above, below) where it hits no marker, no placed label and no map edge;
-        // if none is free it hides until zooming in makes room. The card on hover still names the place.
+        // Pins stay on their true location. Pins closer than 14 units on screen form a group: only the
+        // highest-priority one is labelled, as "Bari +3". Each label tries eight spots around its pin
+        // (right, left, the four diagonals, above, below), drops those that hit a marker, a placed label
+        // or the map edge, and keeps the one farthest from its neighbours, so labels at the west edge of
+        // a cluster go left and those at the east edge go right. With no free spot it hides until
+        // zooming in makes room; the card on hover still names the place.
         type Box = [number, number, number, number]; // x0, y0, x1, y1
         const hit = (a: Box, b: Box) => a[0] < b[2] && b[0] < a[2] && a[1] < b[3] && b[1] < a[3];
         const at = pins.map((p) => [x + +p.dataset.x! * k, y + +p.dataset.y! * k]);
-        const taken: Box[] = at.map(([px, py]) => [px - 7, py - 7, px + 7, py + 7]);
+        const lead = pins.map((_, i) => i);
+        const size = pins.map(() => 0);
+        at.forEach(([px, py], i) => {
+          const j = at.slice(0, i).findIndex(([qx, qy], j) => lead[j] === j && Math.hypot(px - qx, py - qy) < 14);
+          if (j >= 0) { lead[i] = j; size[j]++; }
+        });
+        const marks: Box[] = at.map(([px, py]) => [px - 8, py - 8, px + 8, py + 8]);
+        const labels: Box[] = [];
+        const centre = (b: Box) => [(b[0] + b[2]) / 2, (b[1] + b[3]) / 2];
         pins.forEach((p, i) => {
           const [px, py] = at[i];
           p.setAttribute('transform', `translate(${px} ${py})`);
           const t = p.querySelector('text')!;
-          const fs = parseFloat(getComputedStyle(t).fontSize) || 13;
+          if (lead[i] !== i) { t.style.display = 'none'; return; }
+          t.textContent = p.dataset.city + (size[i] ? ` +${size[i]}` : '');
           t.style.display = ''; // a hidden label measures 0 wide
+          const fs = parseFloat(getComputedStyle(t).fontSize) || 13;
           const w = (svg.clientWidth && t.getComputedTextLength()) || (t.textContent ?? '').length * fs * 0.6;
-          const h = fs, gap = 9;
-          // [text x, text baseline y] relative to the pin
-          const sides = [[gap, h * 0.35], [-gap - w, h * 0.35], [-w / 2, -gap], [-w / 2, gap + h * 0.7]];
-          const own = taken[i];
-          const free = sides.find(([tx, ty]) => {
-            const b: Box = [px + tx - 2, py + ty - h * 0.9, px + tx + w + 2, py + ty + h * 0.35];
-            if (b[0] < 0 || b[1] < 0 || b[2] > W || b[3] > H) return false;
-            return !taken.some((o) => o !== own && hit(o, b));
+          const h = fs, g = 9, d = 6;
+          // [text x, baseline y] relative to the pin, in order of preference
+          const spots = [
+            [g, h * 0.35], [-g - w, h * 0.35],
+            [d, -d], [d, d + h * 0.7], [-d - w, -d], [-d - w, d + h * 0.7],
+            [-w / 2, -g], [-w / 2, g + h * 0.7],
+          ];
+          const others = [...marks.filter((_, j) => lead[j] !== i), ...labels];
+          let best: number[] | null = null, bestScore = -Infinity;
+          spots.forEach(([tx, ty], s) => {
+            const b: Box = [px + tx - 3, py + ty - h * 0.9, px + tx + w + 3, py + ty + h * 0.35];
+            if (b[0] < 0 || b[1] < 0 || b[2] > W || b[3] > H || others.some((o) => hit(o, b))) return;
+            const [cx, cy] = centre(b);
+            // Room around the label (capped, so a lone pin just keeps its preferred side) minus a small preference cost.
+            const room = Math.min(60, ...others.map((o) => { const [ox, oy] = centre(o); return Math.hypot(cx - ox, cy - oy); }));
+            const score = room - s * 2;
+            if (score > bestScore) { bestScore = score; best = [tx, ty, ...b]; }
           });
-          t.style.display = free ? '' : 'none';
-          if (!free) return;
-          t.setAttribute('x', String(free[0]));
-          t.setAttribute('y', String(free[1]));
-          taken.push([px + free[0] - 2, py + free[1] - h * 0.9, px + free[0] + w + 2, py + free[1] + h * 0.35]);
+          t.style.display = best ? '' : 'none';
+          if (!best) return;
+          t.setAttribute('x', String(best[0]));
+          t.setAttribute('y', String(best[1]));
+          labels.push(best.slice(2) as Box);
         });
         svg.classList.toggle('zoomed', k > 1);
         svg.style.setProperty('--k', String(k));
