@@ -50,8 +50,12 @@ const kindOf = (pl: Place): Kind =>
 const W = 1000;
 const sphere = { type: 'Sphere' } as const;
 const corners = (w: number, s: number, e: number, n: number) => ({ type: 'MultiPoint' as const, coordinates: [[w, s], [e, s], [e, n], [w, n], [(w + e) / 2, n], [(w + e) / 2, s]] });
+// The world view opens on the smallest box holding every place, with room for the labels
+// (wider in longitude, where they run), rather than on the whole globe.
+const lons = [...places.values()].map((p) => p.lon), lats = [...places.values()].map((p) => p.lat);
+const around = corners(Math.min(...lons) - 14, Math.min(...lats) - 6, Math.max(...lons) + 14, Math.max(...lats) + 6);
 const views = [
-  { id: 'world', label: 'World', h: 470, fit: corners(-170, -50, 180, 78), land: land110 },
+  { id: 'world', label: 'World', h: 470, fit: around, land: land110 },
   { id: 'med', label: 'Mediterranean', h: 560, fit: corners(-8, 22, 42, 52), land: land50 },
 ].map((v) => {
   const proj = geoNaturalEarth1().fitExtent([[24, 24], [W - 24, v.h - 24]], v.fit);
@@ -307,6 +311,8 @@ const kinds: { id: Kind; label: string }[] = [
     );
     // Label widths change once the web font arrives.
     document.fonts.ready.then(() => zooms.forEach((z) => z(1)));
+    // ...and whenever the map's size changes (resize, phone layout, a tab that loaded in the background).
+    new ResizeObserver(() => zooms.forEach((z) => z(1))).observe(root);
     // A drag that ends on a pin is a pan, not a click.
     root.addEventListener('click', (e) => { if (dragged) { e.stopPropagation(); dragged = false; } }, true);
 
