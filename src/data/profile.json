@@ -17,12 +17,12 @@
     { "period": "2025 –", "role": "Technical architect", "where": "Orion Design and Implementation LLC", "work": "Parametric modelling and interior design" },
     { "period": "2023–25", "role": "Architect", "where": "Bolko von Schweinichen Studio, Florence", "work": "Urban recovery plan for a village near Siena to become a luxury resort; survey and restoration of rural Tuscan buildings", "place": { "city": "Florence", "lat": 43.77, "lon": 11.25 } },
     { "period": "2022–23", "role": "Consultant", "where": "HCC Site Restoration LLC, AlUla, Saudi Arabia", "work": "AlUla Urban Heritage Survey for the Royal Commission for AlUla: field survey, inventory, conservation studies and reports", "place": { "city": "AlUla", "lat": 26.61, "lon": 37.92 } },
-    { "period": "2022", "role": "Intern", "where": "Heliopolis 21 Architects", "work": "Research on clay 3D printing, upcycling and bioreceptive surfaces, with Alessandro Melis", "place": { "city": "Pisa", "lat": 43.72, "lon": 10.40 } },
-    { "period": "2022", "role": "Visiting student", "where": "New York Institute of Technology", "work": "Research for the master's thesis on the South Bronx", "place": { "city": "New York", "lat": 40.77, "lon": -73.98 } }
+    { "period": "2022", "role": "Intern", "where": "Heliopolis 21 Architects", "work": "Research on clay 3D printing, upcycling and bioreceptive surfaces, with Alessandro Melis", "place": { "city": "Pisa", "lat": 43.72, "lon": 10.40 } }
   ],
   "education": [
     { "period": "2025–26", "role": "MaCAD, Master in Advanced Computation for Architecture & Design", "where": "IAAC, Barcelona", "work": "Thesis in progress, completion December 2026", "place": { "city": "Barcelona", "lat": 41.40, "lon": 2.19 } },
     { "period": "2023", "role": "Licensed architect", "where": "Italian State Examination", "work": "" },
+    { "period": "2022", "role": "Visiting student", "where": "New York Institute of Technology", "work": "Research for the master's thesis on the South Bronx", "place": { "city": "New York", "lat": 40.77, "lon": -73.98 } },
     { "period": "2017–22", "role": "M.Arch", "where": "Politecnico di Bari", "work": "110/110 cum laude", "place": { "city": "Bari", "lat": 41.11, "lon": 16.88 } }
   ],
   "exhibitions": [
