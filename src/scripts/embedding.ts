@@ -48,6 +48,20 @@ function cosine(a: Map<number, number>, b: Map<number, number>) {
   return na && nb ? dot / Math.sqrt(na * nb) : 0;
 }
 
+/** The strongest pairs: each item keeps its k most similar items (cosine) at or above `min`. */
+export function links(items: Item[], k = 2, min = 0.35) {
+  const vs = vectors(items);
+  const out = new Map<string, { a: number; b: number; w: number }>();
+  vs.forEach((va, i) => {
+    vs.map((vb, j) => ({ j, w: i === j ? -1 : cosine(va, vb) }))
+      .sort((p, q) => q.w - p.w)
+      .slice(0, k)
+      .filter(({ w }) => w >= min)
+      .forEach(({ j, w }) => out.set(`${Math.min(i, j)}-${Math.max(i, j)}`, { a: Math.min(i, j), b: Math.max(i, j), w }));
+  });
+  return [...out.values()];
+}
+
 /** Top-k eigenvectors of a symmetric matrix by power iteration with deflation. Deterministic start. */
 function eigen(m: number[][], k: number) {
   const n = m.length;
