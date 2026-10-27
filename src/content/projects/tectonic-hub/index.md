@@ -8,6 +8,7 @@ order: 5
 type: Cultural hub, stochastic aggregation
 context: MaCAD, IAAC
 location: Reykjavík
+coords: [64.15, -21.94]
 summary: A kit of hexagonal modules aggregated with WASP into cultural hubs shaped by wind and daylight, tested on two sites in Reykjavík.
 tags: [WASP, Evolutionary optimisation, k-means]
 team: [Elena Corio, Eva Vasileska, Giovanni Carlo Volpe]

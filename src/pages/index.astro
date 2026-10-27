@@ -2,6 +2,8 @@
 import Base from '../layouts/Base.astro';
 import Hero from '../components/Hero.astro';
 import ProjectCard from '../components/ProjectCard.astro';
+import ProjectSpace from '../components/ProjectSpace.astro';
+import WorldMap from '../components/WorldMap.astro';
 import profile from '../data/profile.json';
 import { allProjects, projectUrl, categories } from '../lib';
 
@@ -15,6 +17,14 @@ const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.ye
 ---
 <Base>
   <Hero />
+
+  <section class="sec" id="space-sec">
+    <div class="sec-head">
+      <div><span class="label">00 · Overview</span><h2>Project space</h2></div>
+      <p class="note">All projects on one map. Each circle is placed by the themes and tools it shares with the others; switch to the timeline to see them by year. Pick a theme to highlight its projects.</p>
+    </div>
+    <ProjectSpace />
+  </section>
 
   <section class="sec" id="computational">
     <div class="sec-head">
@@ -61,7 +71,9 @@ const others = projects.filter((p) => !p.data.featured).sort((a, b) => b.data.ye
   <section class="sec" id="experience">
     <div class="sec-head">
       <div><span class="label">04 · CV</span><h2>Experience</h2></div>
+      <p class="note">Where I have studied, worked and exhibited, and where the projects are sited. Open a place to see what happened there.</p>
     </div>
+    <WorldMap />
     <div class="table">
       <table>
         <thead><tr><th class="label">Period</th><th class="label">Role</th><th class="label">Where</th><th class="label">Work</th></tr></thead>

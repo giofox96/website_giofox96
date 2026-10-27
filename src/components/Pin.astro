@@ -1,0 +1,9 @@
+---
+// One map marker shape per kind of place, drawn around the origin.
+interface Props { kind: 'work' | 'study' | 'show' | 'project' }
+const { kind } = Astro.props;
+---
+{kind === 'work' && <circle r="5.5" class="pin-fill" />}
+{kind === 'study' && <circle r="5" class="pin-ring" />}
+{kind === 'show' && <rect x="-4" y="-4" width="8" height="8" transform="rotate(45)" class="pin-fill alt" />}
+{kind === 'project' && <path d="M-5 0H5M0 -5V5" class="pin-cross" />}

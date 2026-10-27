@@ -1,0 +1,185 @@
+---
+// Map of places: where I studied, worked and exhibited, and where the projects are sited.
+// Projected at build time with d3-geo; the page only receives static SVG.
+import { geoGraticule10, geoNaturalEarth1, geoPath } from 'd3-geo';
+import { feature } from 'topojson-client';
+import land110 from 'world-atlas/land-110m.json';
+import land50 from 'world-atlas/land-50m.json';
+import profile from '../data/profile.json';
+import { allProjects, projectUrl } from '../lib';
+import Pin from './Pin.astro';
+
+type Kind = 'work' | 'study' | 'show' | 'project';
+type Entry = { kind: Kind; title: string; sub: string; href?: string };
+type Place = { city: string; lat: number; lon: number; entries: Entry[] };
+
+const places = new Map<string, Place>();
+const add = (p: { city: string; lat: number; lon: number }, e: Entry) => {
+  const at = places.get(p.city) ?? { ...p, entries: [] };
+  at.entries.push(e);
+  places.set(p.city, at);
+};
+type Cv = { period: string; role: string; where: string; place?: { city: string; lat: number; lon: number } };
+for (const e of profile.experience as Cv[]) if (e.place) add(e.place, { kind: 'work', title: e.role, sub: `${e.where} · ${e.period}` });
+for (const e of profile.education as Cv[]) if (e.place) add(e.place, { kind: 'study', title: e.role, sub: `${e.where} · ${e.period}` });
+type Show = { year: string; title: string; where: string; place?: { city: string; lat: number; lon: number } };
+for (const x of profile.exhibitions as Show[]) if (x.place) add(x.place, { kind: 'show', title: x.title, sub: `${x.where} · ${x.year}` });
+
+const projects = await allProjects();
+for (const p of projects) {
+  if (!p.data.coords) continue;
+  const [lat, lon] = p.data.coords;
+  const city = p.data.city ?? p.data.location?.split(',').at(-1)?.trim() ?? p.data.title;
+  // Projects in a city I also lived in join that place; the rest get their own.
+  const near = [...places.values()].find((q) => Math.hypot(q.lat - lat, q.lon - lon) < 0.6);
+  add(near ?? { city, lat, lon }, { kind: 'project', title: p.data.title, sub: `${p.data.type} · ${p.data.year}`, href: projectUrl(p) });
+}
+
+// The journey: CV places in the order I moved through them.
+const year = (s: string) => Number(s.match(/\d{4}/)?.[0] ?? 0);
+const steps = [...(profile.education as Cv[]), ...(profile.experience as Cv[])]
+  .filter((e) => e.place)
+  .map((e, i) => ({ y: year(e.period), i, p: e.place! }))
+  .sort((a, b) => a.y - b.y || b.i - a.i)
+  .map((s) => [s.p.lon, s.p.lat] as [number, number])
+  .filter((c, i, a) => i === 0 || c[0] !== a[i - 1][0] || c[1] !== a[i - 1][1]);
+
+const kindOf = (pl: Place): Kind =>
+  pl.entries.some((e) => e.kind === 'work') ? 'work' : pl.entries.some((e) => e.kind === 'study') ? 'study' : pl.entries.some((e) => e.kind === 'show') ? 'show' : 'project';
+
+const W = 1000;
+const sphere = { type: 'Sphere' } as const;
+const corners = (w: number, s: number, e: number, n: number) => ({ type: 'MultiPoint' as const, coordinates: [[w, s], [e, s], [e, n], [w, n], [(w + e) / 2, n], [(w + e) / 2, s]] });
+const views = [
+  { id: 'world', label: 'World', h: 470, fit: corners(-170, -50, 180, 78), land: land110 },
+  { id: 'med', label: 'Mediterranean', h: 560, fit: corners(-8, 22, 42, 52), land: land50 },
+].map((v) => {
+  const proj = geoNaturalEarth1().fitExtent([[24, 24], [W - 24, v.h - 24]], v.fit);
+  proj.clipExtent([[0, 0], [W, v.h]]);
+  const path = geoPath(proj);
+  const topo = v.land as any;
+  const landPath = path(feature(topo, topo.objects.land) as any) ?? '';
+  const grat = path(geoGraticule10()) ?? '';
+  const outline = path(sphere) ?? '';
+  const route = path({ type: 'LineString', coordinates: steps }) ?? '';
+  const pins = [...places.values()]
+    .map((pl) => {
+      const xy = proj([pl.lon, pl.lat]);
+      return xy && { ...pl, x: Math.round(xy[0]), y: Math.round(xy[1]), kind: kindOf(pl) };
+    })
+    .filter((p) => p !== null && p.x >= 0 && p.x <= W && p.y >= 0 && p.y <= v.h) as (Place & { x: number; y: number; kind: Kind })[];
+  // Label the places I lived in first; skip a label that would sit on top of one already placed.
+  const rank: Record<Kind, number> = { work: 0, study: 0, show: 1, project: 2 };
+  const placed: { x: number; y: number }[] = [];
+  const labelled = new Set<string>();
+  for (const p of [...pins].sort((a, b) => rank[a.kind] - rank[b.kind] || b.entries.length - a.entries.length)) {
+    if (placed.every((q) => Math.abs(q.x - p.x) > 80 || Math.abs(q.y - p.y) > 22)) { placed.push(p); labelled.add(p.city); }
+  }
+  return { ...v, landPath, grat, outline, route, pins, labelled };
+});
+const kinds: { id: Kind; label: string }[] = [
+  { id: 'work', label: 'Work' },
+  { id: 'study', label: 'Study' },
+  { id: 'show', label: 'Exhibition' },
+  { id: 'project', label: 'Project site' },
+];
+---
+<div class="atlas" id="atlas" data-view="world">
+  <div class="space-bar">
+    <ul class="atlas-key mono" aria-label="Legend">
+      {kinds.map((k) => <li><svg viewBox="-8 -8 16 16" aria-hidden="true"><Pin kind={k.id} /></svg>{k.label}</li>)}
+      <li><svg viewBox="0 0 24 8" aria-hidden="true"><path d="M1 4h22" class="route" /></svg>Path, 2017 to today</li>
+    </ul>
+    <div role="group" aria-label="Map extent">
+      {views.map((v, i) => <button type="button" class="chip" data-view={v.id} aria-pressed={String(i === 0)}>{v.label}</button>)}
+    </div>
+  </div>
+  {views.map((v) => (
+    <svg class="atlas-svg" data-view={v.id} viewBox={`0 0 ${W} ${v.h}`} role="group" aria-label={`${v.label} map of places`}>
+      <path d={v.outline} class="sea" />
+      <path d={v.grat} class="grat" />
+      <path d={v.landPath} class="land" />
+      <path d={v.route} class="route" pathLength="1" />
+      {v.pins.map((p) => (
+        <g
+          class="pin"
+          tabindex="0"
+          role="button"
+          aria-label={`${p.city}: ${p.entries.map((e) => e.title).join(', ')}`}
+          transform={`translate(${p.x} ${p.y})`}
+          data-city={p.city}
+        >
+          <circle r="14" class="hit" />
+          <g class="mk"><Pin kind={p.kind} /></g>
+          {v.labelled.has(p.city) && <text x="9" y="4">{p.city}</text>}
+        </g>
+      ))}
+    </svg>
+  ))}
+  <div class="atlas-tip" hidden></div>
+  <script type="application/json" is:inline class="atlas-data" set:html={JSON.stringify(Object.fromEntries([...places.values()].map((p) => [p.city, p.entries]))).replace(/</g, '\\u003c')} />
+  <p class="space-cap mono">
+    <span>Natural Earth projection · land from Natural Earth via world-atlas.</span>
+    <span>{places.size} places · {[...places.values()].reduce((n, p) => n + p.entries.length, 0)} entries</span>
+  </p>
+</div>
+
+<script>
+  type Entry = { kind: string; title: string; sub: string; href?: string };
+  const root = document.getElementById('atlas');
+  if (root) {
+    const data: Record<string, Entry[]> = JSON.parse(root.querySelector('.atlas-data')!.textContent ?? '{}');
+    const tip = root.querySelector<HTMLElement>('.atlas-tip')!;
+    const io = new IntersectionObserver((es) => {
+      if (es.some((e) => e.isIntersecting)) { root.classList.add('on'); io.disconnect(); }
+    }, { threshold: 0.3 });
+    io.observe(root);
+
+    root.querySelectorAll<HTMLButtonElement>('button[data-view]').forEach((b) =>
+      b.addEventListener('click', () => {
+        root.dataset.view = b.dataset.view;
+        root.querySelectorAll('button[data-view]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        tip.hidden = true;
+      }),
+    );
+
+    let pinned: Element | null = null;
+    const show = (pin: SVGGElement) => {
+      const entries = data[pin.dataset.city ?? ''] ?? [];
+      tip.replaceChildren();
+      const h = document.createElement('strong');
+      h.className = 'mono';
+      h.textContent = pin.dataset.city ?? '';
+      tip.append(h);
+      for (const e of entries) {
+        const row = document.createElement(e.href ? 'a' : 'div');
+        if (e.href) (row as HTMLAnchorElement).href = e.href;
+        row.className = `row k-${e.kind}`;
+        const t = document.createElement('b');
+        t.textContent = e.title;
+        const s = document.createElement('span');
+        s.textContent = e.sub;
+        row.append(t, s);
+        tip.append(row);
+      }
+      tip.hidden = false;
+      const box = root.getBoundingClientRect();
+      const b = pin.getBoundingClientRect();
+      const x = b.left - box.left + b.width / 2;
+      tip.style.left = `${Math.max(8, Math.min(x + 12, box.width - tip.offsetWidth - 8))}px`;
+      tip.style.top = `${b.top - box.top + b.height / 2 + 12}px`;
+    };
+    root.querySelectorAll<SVGGElement>('.pin').forEach((pin) => {
+      pin.addEventListener('pointerenter', () => { if (!pinned) show(pin); });
+      pin.addEventListener('pointerleave', () => { if (!pinned) tip.hidden = true; });
+      pin.addEventListener('focus', () => show(pin));
+      // Tap or Enter keeps the card open, so its project links can be followed.
+      const hold = () => { pinned = pinned === pin ? null : pin; show(pin); if (!pinned) tip.hidden = true; };
+      pin.addEventListener('click', hold);
+      pin.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hold(); } });
+    });
+    document.addEventListener('pointerdown', (e) => {
+      if (pinned && !(e.target as Element).closest('.pin, .atlas-tip')) { pinned = null; tip.hidden = true; }
+    });
+  }
+</script>

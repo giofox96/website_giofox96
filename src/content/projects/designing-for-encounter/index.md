@@ -7,6 +7,8 @@ order: 1
 type: Spatial analysis, graphs
 context: MaCAD, IAAC
 location: Vienna and Berlin
+coords: [48.21, 16.37]
+city: Vienna
 summary: Three cohousing buildings read through room graphs, space syntax, shortest paths and isovists, to find where circulation can become a place to meet.
 tags: [Python, Space syntax, Isovists, Graph ML]
 team: [Elena Corio, Andrea Cutroni, Giovanni Carlo Volpe, Symon Kipkemei]

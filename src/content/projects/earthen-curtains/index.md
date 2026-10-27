@@ -8,6 +8,8 @@ order: 4
 type: Market roof, 3D-printed earth
 context: MaCAD, IAAC
 location: Bab al-Luq market, Cairo
+coords: [30.04, 31.25]
+city: Cairo
 summary: Nubian vaults reinterpreted as a 3D-printed earth roof. Each module is scaled by the solar radiation it receives, so the vault tightens where the sun is strongest and opens where it is mild.
 tags: [3D printing, Raw earth, Solar analysis, Kangaroo]
 team: [Giovanni Carlo Volpe]

@@ -8,6 +8,7 @@ order: 2
 type: Landscape
 context: Bari International Archifestival
 location: Bari
+coords: [41.12, 16.87]
 summary: Bari's southern coast reorganised on the grid of the Murattiano district, with gardens, theatres, sports areas, phytoremediation tanks and sea pools, planted with native species only.
 team: [Giovanni Carlo Volpe, Aurora Perta, Felice Mumolo, Simonetta Todisco]
 cover: ./cover.jpg
