@@ -4,3 +4,6 @@ dist/
 # Source PDFs and raw material stay local
 source/
 .DS_Store
+
+# Rendered audio stays local
+music/*.wav

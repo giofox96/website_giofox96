@@ -65,7 +65,10 @@ const nav = [
         <nav class="nav" aria-label="Sections">
           {nav.map(([label, id]) => <a href={`${home}#${id}`}>{label}</a>)}
         </nav>
-        <button class="chip" id="theme" type="button" aria-label="Switch between light and dark theme">◐</button>
+        <div class="top-tools">
+          <button class="chip" id="sound" type="button" aria-pressed="false" aria-label="Background music" title="Background music">♪</button>
+          <button class="chip" id="theme" type="button" aria-label="Switch between light and dark theme">◐</button>
+        </div>
       </header>
 
       <main id="main">
@@ -79,6 +82,7 @@ const nav = [
     </div>
     <script>
       import '../scripts/site';
+      import '../scripts/sound';
     </script>
   </body>
 </html>

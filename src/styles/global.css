@@ -53,6 +53,7 @@ a:hover { color: var(--accent); }
 .nav a:hover { color: var(--ink); }
 .chip { font-family: var(--f-mono); font-size: 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 5px 10px; cursor: pointer; }
 .chip:hover { border-color: var(--ink); }
+.top-tools { display: inline-flex; gap: 6px; }
 
 /* Hero */
 .hero { display: grid; gap: 28px; padding-block: clamp(36px, 7vw, 80px) 28px; }
