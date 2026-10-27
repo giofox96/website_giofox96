@@ -55,13 +55,21 @@ a:hover { color: var(--accent); }
 .chip:hover { border-color: var(--ink); }
 
 /* Hero */
-.hero { display: grid; gap: 28px; padding-block: clamp(36px, 7vw, 80px) 28px; }
+.hero { position: relative; isolation: isolate; display: grid; gap: 28px; align-content: end; min-height: clamp(560px, 88vh, 920px); padding-block: clamp(36px, 7vw, 80px) 20px; }
+/* Full-bleed terrain behind the hero text; the mask fades it under the words so they stay readable. */
+.field { position: absolute; z-index: -1; inset-block: 0; left: 50%; width: 100vw; transform: translateX(-50%); }
+body { overflow-x: clip; } /* the 100vw field must not add a horizontal scroll */
 h1 { font-family: var(--f-display); font-weight: 700; font-size: clamp(2.5rem, 8vw, 5.6rem); line-height: .98; letter-spacing: -.035em; margin: 0; max-width: 13ch; text-wrap: balance; }
 h1 em { font-style: normal; color: var(--accent); }
 .lede { max-width: 58ch; font-size: clamp(1rem, 2vw, 1.2rem); color: var(--muted); margin: 0; }
 .lede strong { color: var(--ink); font-weight: 600; }
-.stage { border: 1px solid var(--line); background: var(--surface); }
-#terrain { display: block; width: 100%; height: clamp(300px, 48vw, 560px); touch-action: pan-y; cursor: crosshair; }
+.stage { border: 1px solid var(--line); background: color-mix(in srgb, var(--surface) 82%, transparent); backdrop-filter: blur(6px); }
+.stage .cap { border-top: 0; }
+#terrain {
+  display: block; width: 100%; height: 100%; touch-action: pan-y; cursor: crosshair;
+  mask-image: linear-gradient(90deg, rgb(0 0 0 / .22) 0%, rgb(0 0 0 / .32) 38%, #000 72%);
+}
+@media (max-width: 760px) { #terrain { mask-image: linear-gradient(180deg, rgb(0 0 0 / .45) 0%, rgb(0 0 0 / .22) 55%, #000 100%); } }
 .cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); }
 .cap-r { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
 .modes { display: inline-flex; }
