@@ -224,28 +224,76 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     }
   }
 
-  function drawAscii() {
+  // Per-cell data for the ASCII mode, sampled once per layout: x, y, lo, hi, z, gx, gy.
+  let grid = new Float32Array(0), relief = 1;
+  function cache() {
+    const out: number[] = [];
+    cells((...v) => out.push(...v));
+    grid = Float32Array.from(out);
+    // Exaggerate the relief so a typical slope reads clearly in the light, whatever the site.
+    const run = (CW / s) * g.mpp, sl: number[] = [];
+    for (let k = 0; k < grid.length; k += 7) sl.push(Math.hypot(grid[k + 5], grid[k + 6]) / run);
+    sl.sort((a, b) => a - b);
+    relief = RELIEF_SLOPE / (sl[sl.length >> 1] || 1);
+  }
+  const each = (fn: (x: number, y: number, lo: number, hi: number, z: number, gx: number, gy: number) => void) => {
+    for (let k = 0; k < grid.length; k += 7) fn(grid[k], grid[k + 1], grid[k + 2], grid[k + 3], grid[k + 4], grid[k + 5], grid[k + 6]);
+  };
+
+  /** n colours from `a` to `b`, read back as RGB through a 1 px canvas so any CSS colour works. */
+  const steps = (a: string, b: string, n: number) => {
+    const px = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+    const rgb = (col: string) => { px.clearRect(0, 0, 1, 1); px.fillStyle = col; px.fillRect(0, 0, 1, 1); return px.getImageData(0, 0, 1, 1).data; };
+    const p = rgb(a), q = rgb(b);
+    return Array.from({ length: n }, (_, i) => {
+      const t = i / (n - 1), m = (k: number) => Math.round(p[k] + (q[k] - p[k]) * t);
+      return `rgb(${m(0)} ${m(1)} ${m(2)})`;
+    });
+  };
+
+  // Hillshade: a sun circles the terrain, every cell is lit by the dot product of its normal with
+  // the sun direction, and the light picks both the character and the colour step.
+  const RAMP = ' .,:;-=+*#'; // darkest to brightest
+  // Sun elevation, ms per turn, and the slope (rise over run) the median cell is drawn at.
+  const SUN_EL = 32 * Math.PI / 180, SUN_PERIOD = 36000, RELIEF_SLOPE = .7;
+  const STILL_AZ = -0.75 * Math.PI; // reduced motion: the classic north-west light
+  let sunDrawn = NaN, sunAz = STILL_AZ, sunT = 0;
+
+  function drawAscii(az = reduce ? STILL_AZ : sunDrawn || STILL_AZ) {
+    sunDrawn = az;
     const c = colours();
+    const pal = steps(c.muted, c.accent, 7);
     const b = bctx;
     b.setTransform(dpr, 0, 0, dpr, 0, 0);
     b.clearRect(0, 0, W, H);
     b.font = '400 13px "JetBrains Mono", ui-monospace, monospace';
     b.textAlign = 'center'; b.textBaseline = 'middle';
-    const ramp = '  ..,,::';
+    const lx = Math.cos(SUN_EL) * Math.cos(az), ly = Math.cos(SUN_EL) * Math.sin(az), lz = Math.sin(SUN_EL);
+    const run = (CW / s) * g.mpp; // metres across one character cell
     const every = INTERVAL * 5;
-    cells((x, y, lo, hi, z, gx, gy) => {
-      const major = Math.floor(hi / every) !== Math.floor(lo / every);
-      const minor = Math.floor(hi / INTERVAL) !== Math.floor(lo / INTERVAL);
-      let ch: string;
-      if (major) { ch = glyph(gx, gy); b.fillStyle = c.ink; b.globalAlpha = .9; }
-      else if (minor) { ch = '·'; b.fillStyle = c.muted; b.globalAlpha = .5; }
-      else {
-        const u = (z - vmin) / (vmax - vmin || 1);
-        ch = ramp[Math.min(ramp.length - 1, Math.floor(u * ramp.length))];
-        b.fillStyle = z >= TINT ? c.accent : c.muted; b.globalAlpha = z >= TINT ? .55 : .3;
+    const n = grid.length / 7;
+    const ch: string[] = new Array(n), step = new Int8Array(n).fill(-1);
+    let k = 0;
+    each((_x, _y, lo, hi, _z, gx, gy) => {
+      if (Math.floor(hi / every) === Math.floor(lo / every)) {
+        const dx = -gx / run * relief, dy = -gy / run * relief;
+        const light = Math.max(0, (dx * lx + dy * ly + lz) / Math.hypot(dx, dy, 1));
+        const u = Math.min(1, light / lz * .38); // flat ground stays sparse, so only sunlit slopes stand out
+        ch[k] = RAMP[Math.min(RAMP.length - 1, Math.floor(u * RAMP.length))];
+        step[k] = Math.min(pal.length - 1, Math.floor(u * pal.length));
       }
-      if (ch !== ' ') b.fillText(ch, x, y);
+      k++;
     });
+    // One fillStyle per colour step, then the index contours on top as direction characters.
+    b.globalAlpha = .8;
+    for (let p = 0; p < pal.length; p++) {
+      b.fillStyle = pal[p];
+      k = 0;
+      each((x, y) => { if (step[k] === p && ch[k] !== ' ') b.fillText(ch[k], x, y); k++; });
+    }
+    k = 0;
+    b.fillStyle = c.ink; b.globalAlpha = .9;
+    each((x, y, _lo, _hi, _z, gx, gy) => { if (step[k++] < 0) b.fillText(glyph(gx, gy), x, y); });
     b.globalAlpha = 1;
     decor(b, c);
   }
@@ -265,6 +313,13 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   }
 
   function frame(t: number) {
+    // Move the sun; redraw the lit grid only when it has turned about a degree.
+    // The sun's own clock only advances while the loop runs, so it resumes where it paused.
+    if (ascii && !reduce && !probe) {
+      sunAz += (Math.min(t - (sunT || t), 50) / SUN_PERIOD) * Math.PI * 2;
+      if (!(Math.abs(sunAz - sunDrawn) < .018)) drawAscii(sunAz);
+    }
+    sunT = t;
     const c = colours();
     ctx!.setTransform(1, 0, 0, 1, 0, 0);
     ctx!.clearRect(0, 0, cv.width, cv.height);
@@ -282,7 +337,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
       // The traced contour as accent characters over a cleared cell.
       ctx!.font = '600 13px "JetBrains Mono", ui-monospace, monospace';
       ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle';
-      cells((x, y, lo, hi, _z, gx, gy) => {
+      each((x, y, lo, hi, _z, gx, gy) => {
         if (level < lo || level > hi) return;
         ctx!.fillStyle = c.surface; ctx!.fillRect(x - CW / 2, y - CH / 2, CW, CH);
         ctx!.fillStyle = c.accent; ctx!.fillText(glyph(gx, gy), x, y);
@@ -314,7 +369,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   const animating = () => !probe && !reduce;
   const loop = (t: number) => { frame(t); raf = visible && animating() ? requestAnimationFrame(loop) : 0; };
   const request = () => { if (!raf) raf = requestAnimationFrame(loop); };
-  const rebuild = () => { if (ascii) drawAscii(); else drawBase(); request(); };
+  const rebuild = () => { if (ascii) { cache(); drawAscii(); } else drawBase(); request(); };
 
   new IntersectionObserver((e) => { visible = e[0].isIntersecting; if (visible) request(); }).observe(cv);
   const setProbe = (e: PointerEvent) => {
