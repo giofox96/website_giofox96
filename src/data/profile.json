@@ -5,7 +5,9 @@
   "email": "giofox96@gmail.com",
   "links": [
     { "label": "LinkedIn", "url": "https://www.linkedin.com/in/giofox9627010/" },
-    { "label": "Instagram", "url": "https://www.instagram.com/giofox96/" }
+    { "label": "Instagram", "url": "https://www.instagram.com/giofox96/" },
+    { "label": "GitHub", "url": "https://github.com/giofox96" },
+    { "label": "GitHub (IAAC)", "url": "https://github.com/giofox96-iaac" }
   ],
   "languages": [
     { "name": "Italian", "level": "Native" },
