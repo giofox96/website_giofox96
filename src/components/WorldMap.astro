@@ -61,7 +61,20 @@ const views = [
   const landPath = path(feature(topo, topo.objects.land) as any) ?? '';
   const grat = path(geoGraticule10()) ?? '';
   const outline = path(sphere) ?? '';
-  const route = path({ type: 'LineString', coordinates: steps }) ?? '';
+  // One arc per move. A leg between two cities already joined bends further out, and a return
+  // trip bends to the other side, so repeated moves never draw on top of each other.
+  const seen = new Map<string, number>();
+  const legs = steps.slice(1).flatMap((to, i) => {
+    const a = proj(steps[i]), b = proj(to);
+    if (!a || !b) return [];
+    const key = [String(steps[i]), String(to)].sort().join('|');
+    const n = seen.get(key) ?? 0;
+    seen.set(key, n + 1);
+    const k = 0.22 + 0.18 * n;
+    const r = (v: number) => Math.round(v * 10) / 10;
+    const cx = (a[0] + b[0]) / 2 - (b[1] - a[1]) * k, cy = (a[1] + b[1]) / 2 + (b[0] - a[0]) * k;
+    return [`M${r(a[0])} ${r(a[1])}Q${r(cx)} ${r(cy)} ${r(b[0])} ${r(b[1])}`];
+  });
   const pins = [...places.values()]
     .map((pl) => {
       const xy = proj([pl.lon, pl.lat]);
@@ -75,7 +88,7 @@ const views = [
   for (const p of [...pins].sort((a, b) => rank[a.kind] - rank[b.kind] || b.entries.length - a.entries.length)) {
     if (placed.every((q) => Math.abs(q.x - p.x) > 80 || Math.abs(q.y - p.y) > 22)) { placed.push(p); labelled.add(p.city); }
   }
-  return { ...v, landPath, grat, outline, route, pins, labelled };
+  return { ...v, landPath, grat, outline, legs, pins, labelled };
 });
 const kinds: { id: Kind; label: string }[] = [
   { id: 'work', label: 'Work' },
@@ -90,16 +103,25 @@ const kinds: { id: Kind; label: string }[] = [
       {kinds.map((k) => <li><svg viewBox="-8 -8 16 16" aria-hidden="true"><Pin kind={k.id} /></svg>{k.label}</li>)}
       <li><svg viewBox="0 0 24 8" aria-hidden="true"><path d="M1 4h22" class="route" /></svg>Path, 2017 to today</li>
     </ul>
-    <div role="group" aria-label="Map extent">
-      {views.map((v, i) => <button type="button" class="chip" data-view={v.id} aria-pressed={String(i === 0)}>{v.label}</button>)}
+    <div class="atlas-ctl">
+      <div role="group" aria-label="Map extent">
+        {views.map((v, i) => <button type="button" class="chip" data-view={v.id} aria-pressed={String(i === 0)}>{v.label}</button>)}
+      </div>
+      <div role="group" aria-label="Zoom">
+        <button type="button" class="chip" data-zoom="in" aria-label="Zoom in">+</button>
+        <button type="button" class="chip" data-zoom="out" aria-label="Zoom out">−</button>
+        <button type="button" class="chip" data-zoom="reset" aria-label="Reset zoom">Reset</button>
+      </div>
     </div>
   </div>
   {views.map((v) => (
     <svg class="atlas-svg" data-view={v.id} viewBox={`0 0 ${W} ${v.h}`} role="group" aria-label={`${v.label} map of places`}>
-      <path d={v.outline} class="sea" />
-      <path d={v.grat} class="grat" />
-      <path d={v.landPath} class="land" />
-      <path d={v.route} class="route" pathLength="1" />
+      <g class="zoom">
+        <path d={v.outline} class="sea" />
+        <path d={v.grat} class="grat" />
+        <path d={v.landPath} class="land" />
+        {v.legs.map((d, i) => <path d={d} class="route" pathLength="1" style={`--d:${(i * 0.3).toFixed(1)}s`} />)}
+      </g>
       {v.pins.map((p) => (
         <g
           class="pin"
@@ -107,11 +129,13 @@ const kinds: { id: Kind; label: string }[] = [
           role="button"
           aria-label={`${p.city}: ${p.entries.map((e) => e.title).join(', ')}`}
           transform={`translate(${p.x} ${p.y})`}
+          data-x={p.x}
+          data-y={p.y}
           data-city={p.city}
         >
           <circle r="14" class="hit" />
           <g class="mk"><Pin kind={p.kind} /></g>
-          {v.labelled.has(p.city) && <text x="9" y="4">{p.city}</text>}
+          <text x="9" y="4" class:list={{ extra: !v.labelled.has(p.city) }}>{p.city}</text>
         </g>
       ))}
     </svg>
@@ -142,6 +166,87 @@ const kinds: { id: Kind; label: string }[] = [
         tip.hidden = true;
       }),
     );
+
+    // Zoom and pan. The land and routes scale inside `.zoom`; pins are moved instead, so they keep their size.
+    let dragged = false;
+    const zooms = new Map<string, (f: number, at?: DOMPoint) => void>();
+    root.querySelectorAll<SVGSVGElement>('.atlas-svg').forEach((svg) => {
+      const g = svg.querySelector<SVGGElement>('.zoom')!;
+      // Pins whose label shows at full extent come first, so they keep it when others compete.
+      const pins = [...svg.querySelectorAll<SVGGElement>('.pin')].sort(
+        (a, b) => +!!a.querySelector('.extra') - +!!b.querySelector('.extra'),
+      );
+      const { width: W, height: H } = svg.viewBox.baseVal;
+      let k = 1, x = 0, y = 0;
+      const apply = () => {
+        x = Math.min(0, Math.max(W - W * k, x));
+        y = Math.min(0, Math.max(H - H * k, y));
+        g.setAttribute('transform', `translate(${x} ${y}) scale(${k})`);
+        // Same collision rule as the build-time labels: skip a label that would sit on one already placed.
+        const placed: { x: number; y: number }[] = [];
+        for (const p of pins) {
+          const px = x + +p.dataset.x! * k, py = y + +p.dataset.y! * k;
+          p.setAttribute('transform', `translate(${px} ${py})`);
+          const free = placed.every((q) => Math.abs(q.x - px) > 80 || Math.abs(q.y - py) > 22);
+          if (free) placed.push({ x: px, y: py });
+          p.querySelector('text')!.style.display = free ? '' : 'none';
+        }
+        svg.classList.toggle('zoomed', k > 1);
+        svg.style.setProperty('--k', String(k));
+        tip.hidden = true;
+      };
+      const local = (cx: number, cy: number) => new DOMPoint(cx, cy).matrixTransform(svg.getScreenCTM()!.inverse());
+      const zoom = (f: number, at = new DOMPoint(W / 2, H / 2)) => {
+        const nk = f === 0 ? 1 : Math.min(8, Math.max(1, k * f));
+        x = at.x - ((at.x - x) * nk) / k;
+        y = at.y - ((at.y - y) * nk) / k;
+        k = nk;
+        apply();
+      };
+      zooms.set(svg.dataset.view!, zoom);
+      svg.addEventListener('wheel', (e) => {
+        if (k === 1 && e.deltaY > 0) return; // let the page scroll when there is nothing to zoom out of
+        e.preventDefault();
+        zoom(Math.exp(-e.deltaY * 0.002), local(e.clientX, e.clientY));
+      }, { passive: false });
+      svg.addEventListener('dblclick', (e) => zoom(2, local(e.clientX, e.clientY)));
+
+      // One pointer pans, two pointers pinch.
+      const ptrs = new Map<number, DOMPoint>();
+      let start = 0;
+      svg.addEventListener('pointerdown', (e) => {
+        if (k > 1) e.preventDefault(); // no text selection while panning
+        ptrs.set(e.pointerId, local(e.clientX, e.clientY));
+        dragged = false;
+        start = 0;
+      });
+      window.addEventListener('pointermove', (e) => {
+        const prev = ptrs.get(e.pointerId);
+        if (!prev) return;
+        const now = local(e.clientX, e.clientY);
+        if (ptrs.size === 2) {
+          const [a, b] = [...ptrs.values()];
+          const d0 = Math.hypot(a.x - b.x, a.y - b.y);
+          ptrs.set(e.pointerId, now);
+          const [c, d] = [...ptrs.values()];
+          if (d0) zoom(Math.hypot(c.x - d.x, c.y - d.y) / d0, new DOMPoint((c.x + d.x) / 2, (c.y + d.y) / 2));
+          dragged = true;
+          return;
+        }
+        start += Math.hypot(now.x - prev.x, now.y - prev.y);
+        if (k > 1 && start > 4) { dragged = true; x += now.x - prev.x; y += now.y - prev.y; apply(); }
+        // The CTM does not change while panning, so the new point is measured in the same frame.
+        ptrs.set(e.pointerId, now);
+      });
+      const up = (e: PointerEvent) => ptrs.delete(e.pointerId);
+      window.addEventListener('pointerup', up);
+      window.addEventListener('pointercancel', up);
+    });
+    root.querySelectorAll<HTMLButtonElement>('button[data-zoom]').forEach((b) =>
+      b.addEventListener('click', () => zooms.get(root.dataset.view!)?.({ in: 1.6, out: 1 / 1.6, reset: 0 }[b.dataset.zoom!]!)),
+    );
+    // A drag that ends on a pin is a pan, not a click.
+    root.addEventListener('click', (e) => { if (dragged) { e.stopPropagation(); dragged = false; } }, true);
 
     let pinned: Element | null = null;
     const show = (pin: SVGGElement) => {
