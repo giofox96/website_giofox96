@@ -268,10 +268,8 @@ footer.foot { margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--li
 .atlas .zoom .route { stroke-width: calc(1.6px / var(--k, 1)); }
 .atlas-svg { touch-action: pan-y; user-select: none; }
 .atlas-svg.zoomed { touch-action: none; cursor: grab; }
-/* Without JS, only the labels that do not collide show; with JS, all show and the pins move apart. */
+/* Without JS, only the labels that do not collide show; with JS, labels are placed live on zoom and pan. */
 .atlas:not(.js) .pin text.extra { display: none; }
-.atlas .pin .lead { stroke: var(--muted); stroke-width: 1; visibility: hidden; }
-.atlas .pin.moved .lead { visibility: visible; }
 /* Legend filter */
 .atlas-key button { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border: 1px solid transparent; background: none; color: inherit; font: inherit; cursor: pointer; transition: opacity .3s, border-color .3s; }
 .atlas-key button:hover, .atlas-key button[aria-pressed="true"] { border-color: var(--line); color: var(--ink); }
