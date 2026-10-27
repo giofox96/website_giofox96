@@ -1,6 +1,7 @@
 // Background music, synthesised live with the Web Audio API: slow vaporwave chords,
 // a square-wave chiptune arpeggio, a lo-fi beat and vinyl crackle. No audio files.
 // Off by default; the ♪ chip in the header starts it (browsers need a click first).
+// Each visit picks either this live synth or a loop of the same song rendered in SoundCraft.
 
 const BPM = 74;
 const STEP = 60 / BPM / 4; // one sixteenth note, in seconds
@@ -30,6 +31,9 @@ let timer = 0;
 let step = 0;
 let next = 0;
 let playing = false;
+let loop: AudioBufferSourceNode | null = null;
+let useLoop: boolean | null = null;
+const LOOP_URL = `${import.meta.env.BASE_URL.replace(/\/?$/, '/')}audio/vaporwave-soundcraft.ogg`;
 
 function build() {
   ctx = new AudioContext();
@@ -75,7 +79,6 @@ function build() {
   const n = noise.getChannelData(0);
   for (let i = 0; i < n.length; i++) n[i] = Math.random() * 2 - 1;
 
-  crackle();
 }
 
 // Vinyl hiss plus sparse clicks, looped forever underneath.
@@ -228,13 +231,39 @@ function fade(to: number, secs: number) {
   master.gain.linearRampToValueAtTime(to, t + secs);
 }
 
+// The rendered loop, decoded once. Null if it is missing or the browser can't decode it.
+async function loadLoop() {
+  try {
+    const res = await fetch(LOOP_URL);
+    if (!res.ok) return null;
+    return await ctx!.decodeAudioData(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
 async function start() {
   if (!ctx) build();
   await ctx!.resume();
-  step = 0;
-  next = ctx!.currentTime + 0.1;
-  timer = window.setInterval(tick, 25);
-  fade(0.8, 2);
+  if (useLoop === null) {
+    const buf = Math.random() < 0.5 ? await loadLoop() : null;
+    useLoop = !!buf;
+    if (!buf) crackle();
+    if (buf) {
+      loop = ctx!.createBufferSource();
+      loop.buffer = buf;
+      loop.loop = true;
+      loop.connect(master);
+      loop.start();
+    }
+  }
+  if (!playing) return;
+  if (!useLoop) {
+    step = 0;
+    next = ctx!.currentTime + 0.1;
+    timer = window.setInterval(tick, 25);
+  }
+  fade(useLoop ? 1 : 0.8, 2);
 }
 
 function stop() {
