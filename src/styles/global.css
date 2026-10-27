@@ -262,7 +262,17 @@ footer.foot { margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--li
 @media (prefers-reduced-motion: no-preference) {
   .atlas .atlas-svg .route { stroke-dasharray: none; stroke-dashoffset: 0; }
   .atlas:not(.on) .atlas-svg .route { stroke-dasharray: 1; stroke-dashoffset: 1; }
-  .atlas.on .atlas-svg .route { animation: draw 2.4s ease-in-out both; stroke-dasharray: 1; }
+  .atlas.on .atlas-svg .route { animation: draw .9s ease-in-out both; animation-delay: var(--d, 0s); stroke-dasharray: 1; }
+/* Land keeps its hairline when zoomed; routes are thinned by --k instead, since non-scaling strokes ignore pathLength in dashes. */
+.atlas .zoom path:not(.route) { vector-effect: non-scaling-stroke; }
+.atlas .zoom .route { stroke-width: calc(1.6px / var(--k, 1)); }
+.atlas-svg { touch-action: pan-y; user-select: none; }
+.atlas-svg.zoomed { touch-action: none; cursor: grab; }
+/* Labels that would collide at full extent appear once the map is zoomed in. */
+.atlas-svg:not(.zoomed) .pin text.extra { display: none; }
+.atlas-svg.zoomed:active { cursor: grabbing; }
+.atlas-ctl { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.atlas-ctl [role="group"] { display: flex; gap: 6px; }
   .atlas .pin { transition: opacity .4s; }
 }
 @keyframes draw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
