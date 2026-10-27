@@ -3,6 +3,15 @@ import profile from '../data/profile.json';
 import { url } from '../lib';
 ---
 <div class="hero">
+  <!-- The terrain runs the full width of the window, behind the text. -->
+  <div class="field">
+    <canvas
+      id="terrain"
+      data-src={url('terrain/contours.json')}
+      role="img"
+      aria-label="Contour map drawn from real elevation data. The contour under the pointer is highlighted with its elevation."
+    ></canvas>
+  </div>
   <h1>I design <em>rules</em>, not just forms.</h1>
   <p class="lede">
     <strong>{profile.name}, architect and computational designer.</strong>{' '}
@@ -10,12 +19,6 @@ import { url } from '../lib';
     Now a technical architect leading parametric modelling, building models that turn site, climate and structure into form.
   </p>
   <div class="stage">
-    <canvas
-      id="terrain"
-      data-src={url('terrain/contours.json')}
-      role="img"
-      aria-label="Contour map drawn from real elevation data. The contour under the pointer is highlighted with its elevation."
-    ></canvas>
     <div class="cap mono">
       <span>Contours from real elevation data, 2 m interval. Move across the map to trace one.</span>
       <span class="cap-r">
@@ -32,8 +35,10 @@ import { url } from '../lib';
   import { mountTerrain } from '../scripts/terrain';
   const cv = document.getElementById('terrain');
   if (cv instanceof HTMLCanvasElement) {
-    // Without the elevation data there is nothing to draw: hide the map rather than show an empty frame.
-    mountTerrain(cv).catch(() => { cv.closest<HTMLElement>('.stage')!.hidden = true; });
+    // Without the elevation data there is nothing to draw: hide the map and its caption rather than show an empty frame.
+    mountTerrain(cv).catch(() => {
+      document.querySelectorAll<HTMLElement>('.hero .field, .hero .stage').forEach((el) => { el.hidden = true; });
+    });
     const buttons = document.querySelectorAll<HTMLButtonElement>('.stage .modes button');
     const pick = (mode: string) => {
       cv.dataset.mode = mode;

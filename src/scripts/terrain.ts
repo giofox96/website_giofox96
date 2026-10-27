@@ -111,7 +111,9 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   let raf = 0, visible = true, idleSince = 0;
   let ascii = cv.dataset.mode === 'ascii';
   // Character cell in CSS pixels; JetBrains Mono is about 0.6 em wide.
-  const CW = 8.4, CH = 14;
+  // A finer grid on wide screens; phones keep 13 px so the characters stay legible.
+  let FS = 13, CW = 8.4, CH = 14;
+  const font = (weight: number) => `${weight} ${FS}px "JetBrains Mono", ui-monospace, monospace`;
 
   const colours = () => {
     const cs = getComputedStyle(root);
@@ -130,6 +132,7 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     const r = cv.getBoundingClientRect();
     dpr = Math.min(window.devicePixelRatio || 1, 2);
     W = r.width; H = r.height;
+    FS = W < 640 ? 13 : 9.5; CW = FS * .646; CH = FS * 1.077;
     for (const c of [cv, base]) { c.width = Math.round(W * dpr); c.height = Math.round(H * dpr); }
     // Cover the canvas with the grid, centred on the high ground.
     s = Math.max(W / (g.w - 1), H / (g.h - 1));
@@ -240,10 +243,12 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     for (let k = 0; k < grid.length; k += 7) fn(grid[k], grid[k + 1], grid[k + 2], grid[k + 3], grid[k + 4], grid[k + 5], grid[k + 6]);
   };
 
-  /** n colours from `a` to `b`, read back as RGB through a 1 px canvas so any CSS colour works. */
+  // CSS colours read back as RGB through a 1 px canvas, so any colour syntax works.
+  const px = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
+  const rgb = (col: string) => { px.clearRect(0, 0, 1, 1); px.fillStyle = col; px.fillRect(0, 0, 1, 1); return px.getImageData(0, 0, 1, 1).data; };
+  const dark = (col: string) => { const [r, gg, b] = rgb(col); return r * .2126 + gg * .7152 + b * .0722 < 90; };
+  /** n colours from `a` to `b`. */
   const steps = (a: string, b: string, n: number) => {
-    const px = document.createElement('canvas').getContext('2d', { willReadFrequently: true })!;
-    const rgb = (col: string) => { px.clearRect(0, 0, 1, 1); px.fillStyle = col; px.fillRect(0, 0, 1, 1); return px.getImageData(0, 0, 1, 1).data; };
     const p = rgb(a), q = rgb(b);
     return Array.from({ length: n }, (_, i) => {
       const t = i / (n - 1), m = (k: number) => Math.round(p[k] + (q[k] - p[k]) * t);
@@ -256,17 +261,43 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   const RAMP = ' .,:;-=+*#'; // darkest to brightest
   // Sun elevation, ms per turn, and the slope (rise over run) the median cell is drawn at.
   const SUN_EL = 32 * Math.PI / 180, SUN_PERIOD = 36000, RELIEF_SLOPE = .7;
+  const FLICKER = .04; // share of lit cells shown as a random digit
   const STILL_AZ = -0.75 * Math.PI; // reduced motion: the classic north-west light
   let sunDrawn = NaN, sunAz = STILL_AZ, sunT = 0;
 
-  function drawAscii(az = reduce ? STILL_AZ : sunDrawn || STILL_AZ) {
+  const GLYPHS = RAMP.slice(1) + '0123456789';
+  let sheetKey = '', sheetCv: HTMLCanvasElement | null = null;
+  /** Every glyph in every colour step, one row per step, at device resolution. Rebuilt only when the palette or cell size changes. */
+  function sprites(pal: string[]) {
+    const key = `${pal.join()}|${FS}|${dpr}`;
+    if (sheetCv && key === sheetKey) return sheetCv;
+    const sw = Math.ceil(CW * dpr), sh = Math.ceil(CH * dpr);
+    const cvs = sheetCv ?? document.createElement('canvas');
+    cvs.width = sw * GLYPHS.length; cvs.height = sh * pal.length;
+    const x = cvs.getContext('2d')!;
+    x.font = `400 ${FS * dpr}px "JetBrains Mono", ui-monospace, monospace`;
+    x.textAlign = 'center'; x.textBaseline = 'middle';
+    pal.forEach((col, r) => {
+      x.fillStyle = col;
+      for (let i = 0; i < GLYPHS.length; i++) x.fillText(GLYPHS[i], i * sw + sw / 2, r * sh + sh / 2);
+    });
+    sheetCv = cvs; sheetKey = key;
+    return cvs;
+  }
+
+  // What each cell showed last time, so a sun step only repaints the cells that changed.
+  let shownCh: string[] = [], shownStep = new Int8Array(0), palette: string[] = [], glowing = false;
+  const glowCv = document.createElement('canvas');
+
+  /** Full repaint (layout, theme or mode change), or with `partial` only the cells whose glyph changed. */
+  function drawAscii(az = reduce ? STILL_AZ : sunDrawn || STILL_AZ, partial = false) {
     sunDrawn = az;
     const c = colours();
-    const pal = steps(c.muted, c.accent, 7);
+    if (!partial || !palette.length) { palette = steps(c.muted, c.accent, 7); glowing = dark(c.surface); }
+    const pal = palette;
     const b = bctx;
     b.setTransform(dpr, 0, 0, dpr, 0, 0);
-    b.clearRect(0, 0, W, H);
-    b.font = '400 13px "JetBrains Mono", ui-monospace, monospace';
+    b.font = font(400);
     b.textAlign = 'center'; b.textBaseline = 'middle';
     const lx = Math.cos(SUN_EL) * Math.cos(az), ly = Math.cos(SUN_EL) * Math.sin(az), lz = Math.sin(SUN_EL);
     const run = (CW / s) * g.mpp; // metres across one character cell
@@ -281,21 +312,45 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
         const u = Math.min(1, light / lz * .38); // flat ground stays sparse, so only sunlit slopes stand out
         ch[k] = RAMP[Math.min(RAMP.length - 1, Math.floor(u * RAMP.length))];
         step[k] = Math.min(pal.length - 1, Math.floor(u * pal.length));
+        // Matrix-style flicker: a few lit cells show a random digit in the brightest colour, changing every redraw.
+        if (!reduce && step[k] >= 2 && Math.random() < FLICKER) { ch[k] = String((Math.random() * 10) | 0); step[k] = pal.length - 1; }
       }
       k++;
     });
-    // One fillStyle per colour step, then the index contours on top as direction characters.
+    // Lit cells are stamped from a prerendered sprite sheet (character × colour step): far cheaper
+    // than fillText for tens of thousands of cells. Then the index contours on top as direction characters.
+    const sheet = sprites(pal);
+    const sw = Math.ceil(CW * dpr), sh = Math.ceil(CH * dpr);
+    const same = partial && shownCh.length === n;
+    if (!same) b.clearRect(0, 0, W, H);
+    b.setTransform(1, 0, 0, 1, 0, 0);
     b.globalAlpha = .8;
-    for (let p = 0; p < pal.length; p++) {
-      b.fillStyle = pal[p];
-      k = 0;
-      each((x, y) => { if (step[k] === p && ch[k] !== ' ') b.fillText(ch[k], x, y); k++; });
-    }
     k = 0;
-    b.fillStyle = c.ink; b.globalAlpha = .9;
-    each((x, y, _lo, _hi, _z, gx, gy) => { if (step[k++] < 0) b.fillText(glyph(gx, gy), x, y); });
+    each((x, y) => {
+      if (step[k] >= 0 && !(same && ch[k] === shownCh[k] && step[k] === shownStep[k])) {
+        const dx = Math.round((x - CW / 2) * dpr), dy = Math.round((y - CH / 2) * dpr);
+        if (same) b.clearRect(dx, dy, sw, sh);
+        const i = GLYPHS.indexOf(ch[k]);
+        if (i >= 0) b.drawImage(sheet, i * sw, step[k] * sh, sw, sh, dx, dy, sw, sh);
+      }
+      k++;
+    });
+    shownCh = ch; shownStep = step;
+    b.setTransform(dpr, 0, 0, dpr, 0, 0);
+    if (!same) {
+      k = 0;
+      b.fillStyle = c.ink; b.globalAlpha = .9;
+      each((x, y, _lo, _hi, _z, gx, gy) => { if (step[k++] < 0) b.fillText(glyph(gx, gy), x, y); });
+    }
     b.globalAlpha = 1;
     decor(b, c);
+    // On a dark theme a blurred copy of the characters, added on top in frame(), makes them glow.
+    if (glowing) {
+      glowCv.width = base.width; glowCv.height = base.height;
+      const gl = glowCv.getContext('2d')!;
+      gl.filter = `blur(${2 * dpr}px)`;
+      gl.drawImage(base, 0, 0);
+    }
   }
 
   function decor(b: CanvasRenderingContext2D, c: ReturnType<typeof colours>) {
@@ -313,17 +368,22 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
   }
 
   function frame(t: number) {
-    // Move the sun; redraw the lit grid only when it has turned about a degree.
+    // Move the sun; redraw the lit grid only when it has turned about 1.5 degrees.
     // The sun's own clock only advances while the loop runs, so it resumes where it paused.
     if (ascii && !reduce && !probe) {
       sunAz += (Math.min(t - (sunT || t), 50) / SUN_PERIOD) * Math.PI * 2;
-      if (!(Math.abs(sunAz - sunDrawn) < .018)) drawAscii(sunAz);
+      if (!(Math.abs(sunAz - sunDrawn) < .026)) drawAscii(sunAz, true);
     }
     sunT = t;
     const c = colours();
     ctx!.setTransform(1, 0, 0, 1, 0, 0);
     ctx!.clearRect(0, 0, cv.width, cv.height);
     ctx!.drawImage(base, 0, 0);
+    if (ascii && glowing) {
+      ctx!.globalCompositeOperation = 'lighter'; ctx!.globalAlpha = .6;
+      ctx!.drawImage(glowCv, 0, 0);
+      ctx!.globalCompositeOperation = 'source-over'; ctx!.globalAlpha = 1;
+    }
     ctx!.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     let level: number;
@@ -335,11 +395,11 @@ export async function mountTerrain(cv: HTMLCanvasElement) {
     }
     if (ascii) {
       // The traced contour as accent characters over a cleared cell.
-      ctx!.font = '600 13px "JetBrains Mono", ui-monospace, monospace';
+      ctx!.font = font(600);
       ctx!.textAlign = 'center'; ctx!.textBaseline = 'middle';
       each((x, y, lo, hi, _z, gx, gy) => {
         if (level < lo || level > hi) return;
-        ctx!.fillStyle = c.surface; ctx!.fillRect(x - CW / 2, y - CH / 2, CW, CH);
+        ctx!.clearRect(x - CW / 2, y - CH / 2, CW, CH); // the page shows through, as everywhere else
         ctx!.fillStyle = c.accent; ctx!.fillText(glyph(gx, gy), x, y);
       });
     } else {
