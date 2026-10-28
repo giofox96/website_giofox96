@@ -14,7 +14,7 @@
     { "name": "English", "level": "B2 First, Cambridge" }
   ],
   "experience": [
-    { "period": "2025 –", "role": "Technical architect", "where": "Orion Design and Implementation LLC", "work": "Parametric modelling and interior design" },
+    { "period": "2025 –", "role": "Technical architect", "where": "Orion Design and Implementation LLC", "work": "Parametric modelling and interior design", "place": { "city": "Florence", "lat": 43.77, "lon": 11.25 } },
     { "period": "2023–25", "role": "Architect", "where": "Bolko von Schweinichen Studio, Florence", "work": "Urban recovery plan for a village near Siena to become a luxury resort; survey and restoration of rural Tuscan buildings", "place": { "city": "Florence", "lat": 43.77, "lon": 11.25 } },
     { "period": "2022–23", "role": "Consultant", "where": "HCC Site Restoration LLC, AlUla, Saudi Arabia", "work": "AlUla Urban Heritage Survey for the Royal Commission for AlUla: field survey, inventory, conservation studies and reports", "place": { "city": "AlUla", "lat": 26.61, "lon": 37.92 } },
     { "period": "2022", "role": "Intern", "where": "Heliopolis 21 Architects", "work": "Research on clay 3D printing, upcycling and bioreceptive surfaces, with Alessandro Melis", "place": { "city": "Pisa", "lat": 43.72, "lon": 10.40 } }
