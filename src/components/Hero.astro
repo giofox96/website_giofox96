@@ -33,6 +33,10 @@ import { url } from '../lib';
 </div>
 <script>
   import { mountTerrain } from '../scripts/terrain';
+  // 100vw includes the scrollbar; keep its width out of the full-bleed field so the map edges stay visible.
+  const sbw = () => document.documentElement.style.setProperty('--sbw', `${window.innerWidth - document.documentElement.clientWidth}px`);
+  sbw();
+  window.addEventListener('resize', sbw);
   const cv = document.getElementById('terrain');
   if (cv instanceof HTMLCanvasElement) {
     // Without the elevation data there is nothing to draw: hide the map and its caption rather than show an empty frame.

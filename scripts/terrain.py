@@ -21,7 +21,7 @@ from PIL import Image
 
 LAT, LON = 40.7556, 17.3264      # centre of the map
 Z = 14
-SPAN_X, SPAN_Y = 900, 400        # crop in zoom-14 pixels (~6.5 x 2.9 km)
+SPAN_X, SPAN_Y = 1400, 400       # crop in zoom-14 pixels (~10 x 2.9 km): wide enough for 32" and ultrawide screens
 DOWNSAMPLE = 2
 STEP = 0.05
 OUT = Path(__file__).resolve().parent.parent / "public" / "terrain" / "contours.json"
