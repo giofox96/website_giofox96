@@ -53,7 +53,10 @@ a:hover { color: var(--accent); }
 .nav a:hover { color: var(--ink); }
 .chip { font-family: var(--f-mono); font-size: 12px; background: transparent; color: var(--ink); border: 1px solid var(--line); padding: 5px 10px; cursor: pointer; }
 .chip:hover { border-color: var(--ink); }
-.top-tools { display: inline-flex; gap: 6px; }
+.top-tools { display: inline-flex; align-items: center; gap: 6px; }
+.pill { display: inline-flex; align-items: center; gap: 7px; font-family: var(--f-mono); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; text-decoration: none; color: var(--ink); border: 1px solid var(--line); border-radius: 999px; padding: 5px 13px; margin-right: 6px; transition: background .15s, color .15s, border-color .15s; }
+.pill:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
 
 /* Side index: a fixed list of the home sections that stays reachable while scrolling.
    Wide screens show it open in the left margin; narrower ones fold it into a "Menu" button. */
