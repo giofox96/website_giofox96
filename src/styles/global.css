@@ -26,7 +26,7 @@
 }
 
 *, *::before, *::after { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; scroll-padding-top: 16px; }
+html { -webkit-text-size-adjust: 100%; scroll-padding-top: calc(var(--top-h, 72px) + 16px); }
 @media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body {
   margin: 0;
@@ -46,7 +46,10 @@ a:hover { color: var(--accent); }
 .skip:focus { top: 8px; }
 
 /* Header */
-.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-block: 20px; border-bottom: 1px solid var(--line); }
+.top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px; padding-block: 14px; border-bottom: 1px solid var(--line); }
+/* The top bar stays pinned while scrolling; the shadow and clip stretch its background edge to edge. */
+.top { position: sticky; top: 0; z-index: 30; background: var(--bg); box-shadow: 0 0 0 100vmax var(--bg); clip-path: inset(0 -100vmax); }
+.nav a[aria-current="true"] { color: var(--ink); text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 6px; }
 .brand { font-family: var(--f-display); font-weight: 700; font-size: 18px; letter-spacing: -.01em; text-decoration: none; }
 .nav { display: flex; flex-wrap: wrap; gap: 4px 20px; }
 .nav a { font-size: 14px; text-decoration: none; color: var(--muted); padding-block: 4px; }
@@ -59,33 +62,19 @@ a:hover { color: var(--accent); }
 .top-tools .pill:last-of-type { margin-right: 6px; }
 .pill:hover { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .pill:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+@media (max-width: 760px) {
+  /* Name and tools on the first row, the section links on one scrollable row below. */
+  .top { gap: 8px 16px; padding-block: 10px; }
+  .nav { order: 3; flex: 1 0 100%; flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; gap: 18px; }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav a { white-space: nowrap; }
+  /* GitHub shrinks to its icon so the name and the tools fit on one row. */
+  .top-tools { gap: 4px; }
+  .top-tools .pill:last-of-type { margin-right: 2px; }
+  .pill:not(.icon) { width: 30px; padding: 0; justify-content: center; font-size: 0; gap: 0; }
+  .top-tools .chip { padding: 5px 8px; }
+}
 
-/* Side index: a fixed list of the home sections that stays reachable while scrolling.
-   Wide screens show it open in the left margin; narrower ones fold it into a "Menu" button. */
-.side { position: fixed; z-index: 20; opacity: 0; visibility: hidden; transition: opacity .25s, visibility .25s; }
-.side.is-on { opacity: 1; visibility: visible; }
-.side-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-.side-list a { display: flex; gap: 10px; align-items: baseline; font-size: 13px; line-height: 1.3; text-decoration: none; color: var(--muted); padding-block: 5px; }
-.side-list a .mono { font-size: 11px; min-width: 2ch; }
-.side-list a:hover { color: var(--ink); }
-.side-list a[aria-current="true"] { color: var(--ink); font-weight: 600; }
-.side-list a[aria-current="true"] .mono { color: var(--accent); }
-.side-up { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--line); }
-@media (min-width: 1440px) {
-  .side { left: 24px; top: 50%; transform: translateY(-50%); width: calc((100vw - 1200px) / 2 - 40px); max-width: 180px; }
-  .side-toggle { display: none; }
-  .side-list a { position: relative; padding-left: 14px; }
-  .side-list a::before { content: ''; position: absolute; left: 0; top: 50%; width: 6px; height: 1px; background: var(--line); transition: width .2s, background .2s; }
-  .side-list a[aria-current="true"]::before { width: 10px; background: var(--accent); }
-}
-@media (max-width: 1439px) {
-  .side { right: var(--gutter); bottom: 16px; display: grid; justify-items: end; gap: 8px; }
-  .side-toggle { background: var(--surface); box-shadow: 0 2px 10px rgb(0 0 0 / .12); }
-  .side-list { order: -1; background: var(--surface); border: 1px solid var(--line); padding: 10px 16px; min-width: 200px; box-shadow: 0 6px 24px rgb(0 0 0 / .14); }
-  .side:not(.is-open) .side-list { display: none; }
-  .side.is-open .side-toggle { background: var(--ink); color: var(--bg); border-color: var(--ink); }
-}
-@media (prefers-reduced-motion: reduce) { .side, .side-list a::before { transition: none; } }
 
 /* Hero */
 .hero { position: relative; isolation: isolate; display: grid; gap: 28px; align-content: end; min-height: clamp(560px, 88vh, 920px); padding-block: clamp(36px, 7vw, 80px) 20px; }

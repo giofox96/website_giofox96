@@ -33,16 +33,6 @@ const nav = [
 const link = (label: string) => profile.links.find((l) => l.label === label)?.url;
 const linkedin = link('LinkedIn');
 const instagram = link('Instagram');
-// Side index: every home section, numbered like the section labels.
-const index = [
-  ['00', 'Overview', 'space-sec'],
-  ['01', 'Computational', 'computational'],
-  ['02', 'Architecture', 'architecture'],
-  ['03', 'Index', 'other'],
-  ['04', 'Experience', 'experience'],
-  ['05', 'About', 'about'],
-  ['06', 'Contact', 'contact'],
-];
 ---
 <!doctype html>
 <html lang="en">
@@ -76,7 +66,7 @@ const index = [
       <header class="top">
         <a class="brand" href={home}>{profile.name}</a>
         <nav class="nav" aria-label="Sections">
-          {nav.map(([label, id]) => <a href={`${home}#${id}`}>{label}</a>)}
+          {nav.map(([label, id]) => <a href={`${home}#${id}`} data-sec={id}>{label}</a>)}
         </nav>
         <div class="top-tools">
           <a class="pill" href="https://github.com/giofox96" target="_blank" rel="noopener" aria-label="GitHub profile (opens in a new tab)">
@@ -97,16 +87,6 @@ const index = [
           <button class="chip" id="theme" type="button" aria-label="Switch between light and dark theme">◐</button>
         </div>
       </header>
-
-      <aside class="side" id="side" aria-label="Section index">
-        <button class="chip side-toggle" id="side-toggle" type="button" aria-expanded="false" aria-controls="side-list">Menu</button>
-        <ol class="side-list" id="side-list">
-          {index.map(([n, label, id]) => (
-            <li><a href={`${home}#${id}`} data-sec={id}><span class="mono">{n}</span>{label}</a></li>
-          ))}
-          <li class="side-up"><a href="#main" data-top><span class="mono">↑</span>Top</a></li>
-        </ol>
-      </aside>
 
       <main id="main">
         <slot />
