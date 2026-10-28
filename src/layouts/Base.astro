@@ -30,6 +30,16 @@ const nav = [
   ['About', 'about'],
   ['Contact', 'contact'],
 ];
+// Side index: every home section, numbered like the section labels.
+const index = [
+  ['00', 'Overview', 'space-sec'],
+  ['01', 'Computational', 'computational'],
+  ['02', 'Architecture', 'architecture'],
+  ['03', 'Index', 'other'],
+  ['04', 'Experience', 'experience'],
+  ['05', 'About', 'about'],
+  ['06', 'Contact', 'contact'],
+];
 ---
 <!doctype html>
 <html lang="en">
@@ -70,6 +80,16 @@ const nav = [
           <button class="chip" id="theme" type="button" aria-label="Switch between light and dark theme">◐</button>
         </div>
       </header>
+
+      <aside class="side" id="side" aria-label="Section index">
+        <button class="chip side-toggle" id="side-toggle" type="button" aria-expanded="false" aria-controls="side-list">Menu</button>
+        <ol class="side-list" id="side-list">
+          {index.map(([n, label, id]) => (
+            <li><a href={`${home}#${id}`} data-sec={id}><span class="mono">{n}</span>{label}</a></li>
+          ))}
+          <li class="side-up"><a href="#main" data-top><span class="mono">↑</span>Top</a></li>
+        </ol>
+      </aside>
 
       <main id="main">
         <slot />
