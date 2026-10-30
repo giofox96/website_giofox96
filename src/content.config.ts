@@ -37,6 +37,11 @@ const projects = defineCollection({
       workflow: z
         .array(z.object({ label: z.string(), text: z.string().optional(), image: image().optional() }))
         .default([]),
+      // Screen recordings and animations, served from public/ (paths without the base).
+      // `loop` plays silently on repeat like a GIF; otherwise the video gets controls.
+      videos: z
+        .array(z.object({ src: z.string(), poster: z.string().optional(), caption: z.string().optional(), loop: z.boolean().default(false) }))
+        .default([]),
       gallery: z
         .array(
           z.object({

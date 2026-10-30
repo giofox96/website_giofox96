@@ -71,6 +71,22 @@ const cols = n <= 5 ? n : n === 6 ? 3 : 4;
       </section>
     )}
 
+    {d.videos.length > 0 && (
+      <section class="sec">
+        <div class="sec-head"><div><h2>Videos</h2></div></div>
+        <div class="gallery">
+          {d.videos.map((v) => (
+            <figure>
+              {v.loop
+                ? <video src={url(v.src)} poster={v.poster && url(v.poster)} autoplay loop muted playsinline></video>
+                : <video src={url(v.src)} poster={v.poster && url(v.poster)} controls muted playsinline preload="none"></video>}
+              {v.caption && <figcaption class="mono">{v.caption}</figcaption>}
+            </figure>
+          ))}
+        </div>
+      </section>
+    )}
+
     {d.gallery.length > 0 && (
       <section class="sec">
         <div class="sec-head"><div><h2>Drawings and images</h2></div></div>
