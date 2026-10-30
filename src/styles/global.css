@@ -197,7 +197,8 @@ footer.foot { margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--li
 .gallery figure { margin: 0; grid-column: 1 / -1; display: grid; gap: 8px; align-content: start; }
 .gallery figure.half { grid-column: auto; }
 @media (max-width: 640px) { .gallery figure.half { grid-column: 1 / -1; } }
-.gallery img { width: 100%; border: 1px solid var(--line); }
+.gallery img, .gallery video { width: 100%; border: 1px solid var(--line); }
+.gallery video { display: block; height: auto; background: #fff; }
 .gallery .diagram img { background: #fff; }
 .gallery figcaption { color: var(--muted); }
 .pn { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--ink); padding-top: 16px; }
