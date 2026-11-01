@@ -41,6 +41,10 @@ workflow:
     text: Structural, data and program teams read the results in the browser, without any local software.
     image: ./user-workflow.jpg
 videos:
+  - src: video/hb02-facade-workflow.mp4
+    poster: video/hb02-facade-workflow.jpg
+    caption: Massing, shrinkwrap and quad remesh, structural analysis, frame and panels
+    loop: true
   - src: video/hb02-topology-optimisation.mp4
     poster: video/hb02-topology-optimisation.jpg
     caption: Topology optimisation of the megastructure

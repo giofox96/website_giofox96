@@ -40,6 +40,15 @@ workflow:
   - label: Wind optimisation
     text: Evolutionary optimisation picks the pair of grid points whose footprint gives the best pedestrian wind comfort and built area.
     image: ./step-7.jpg
+videos:
+  - src: video/tectonic-hub-aggregation.mp4
+    poster: video/tectonic-hub-aggregation.jpg
+    caption: Floor-by-floor WASP aggregation of the hub
+    loop: true
+  - src: video/tectonic-hub-section.mp4
+    poster: video/tectonic-hub-section.jpg
+    caption: Sectional cut through the aggregated hub
+    loop: true
 gallery:
   - image: ./topological-map.jpg
     alt: Topological map of public, semi-private, support, event and core modules by floor

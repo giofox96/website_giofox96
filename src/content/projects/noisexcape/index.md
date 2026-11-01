@@ -35,6 +35,10 @@ workflow:
   - label: Transfer
     text: "Models trained on Barcelona, then deployed to five other European cities: Viladecans, Zaragoza, Lyon, Berlin and Milan."
     image: ./step-5.jpg
+videos:
+  - src: video/noisexcape-deployment.mp4
+    poster: video/noisexcape-deployment.jpg
+    caption: Deployment on five cities and conclusions
 gallery:
   - image: ./pipeline.jpg
     alt: Pipeline from noise data, street network, points of interest and land use to model training and deployment

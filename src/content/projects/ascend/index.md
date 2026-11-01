@@ -27,6 +27,10 @@ workflow:
     text: Every change recomputes the Grasshopper definition and sends the mesh back to the browser.
   - label: Export to CAD
     text: A layered .3dm file, dimensionally accurate and ready for the BIM or CAD workflow.
+videos:
+  - src: video/ascend-demo.mp4
+    poster: video/ascend-demo.jpg
+    caption: Ascend web app demo
 gallery:
   - image: ./u-shape.jpg
     alt: A U-shaped staircase with timber steps in the Ascend interface

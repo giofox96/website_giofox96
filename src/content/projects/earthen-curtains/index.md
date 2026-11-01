@@ -34,6 +34,10 @@ workflow:
   - label: Market layout
     text: The lowest points of the curtains, projected to the ground, place the stalls through circles and metaballs.
     image: ./step-5.jpg
+videos:
+  - src: video/earthen-curtains-presentation.mp4
+    poster: video/earthen-curtains-presentation.jpg
+    caption: Project presentation
 gallery:
   - image: ./concept.jpg
     alt: Concept and pseudocode, from sunlight direction to roof modules, tassels and supporting structure
