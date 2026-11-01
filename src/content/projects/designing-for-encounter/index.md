@@ -10,7 +10,7 @@ location: Vienna and Berlin
 coords: [48.21, 16.37]
 city: Vienna
 summary: Three cohousing buildings read through room graphs, space syntax, shortest paths and isovists, to find where circulation can become a place to meet.
-tags: [Python, Space syntax, Isovists, Graph ML]
+tags: [Python, Space syntax, Isovists, Graph ML, Cohousing]
 team: [Elena Corio, Andrea Cutroni, Giovanni Carlo Volpe, Symon Kipkemei]
 course: Graph Machine Learning
 faculty: Wassim Jabi, Olga Poletkina

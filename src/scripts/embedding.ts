@@ -8,12 +8,16 @@ export type Theme = { id: string; label: string; match: RegExp };
 export const themes: Theme[] = [
   { id: 'param', label: 'Parametric', match: /grasshopper|rhino|parametric|kangaroo|wasp|form-finding|aggregation|space truss|crystallon/i },
   { id: 'struct', label: 'Structure', match: /structur|space truss|kangaroo|alpaca4d|glulam|clt|dlt|timber|pavilion/i },
-  { id: 'env', label: 'Environment', match: /solar|utci|radiation|environment|climate|noise|xeriscap|landscape|earth/i },
+  { id: 'env', label: 'Environment', match: /solar|utci|radiation|environment|climate|noise|wind|flood|earth/i },
   { id: 'ai', label: 'AI · ML', match: /xgboost|shap|machine learning|graph ml|hdbscan|k-means|llm|comfyui|flux|generative ai|ai agent|lm studio/i },
   { id: 'fab', label: 'Fabrication', match: /3d.print|raw earth|clay/i },
-  { id: 'urban', label: 'Urban', match: /urban|space syntax|isovist|openstreetmap|regeneration|densification|housing|thesis|market|graphs/i },
+  { id: 'urban', label: 'Urban', match: /urban|space syntax|isovist|openstreetmap|regeneration|densification|15-minute|transport|thesis|market|graphs/i },
   { id: 'code', label: 'Code', match: /python|web|compute|app|planfinder|rgraphlib/i },
   { id: 'opt', label: 'Optimisation', match: /optimis|evolutionary|lilypad|layout search/i },
+  { id: 'bim', label: 'BIM', match: /\bbim\b|revit|\bifc\b|speckle|rhino\.inside|point cloud|scan-to-bim/i },
+  { id: 'land', label: 'Landscape', match: /landscape|xeriscap|phytoremediation|native planting|garden|public space/i },
+  { id: 'house', label: 'Housing', match: /housing|cohousing|floor plan|dwelling/i },
+  { id: 'reuse', label: 'Reuse', match: /reuse|reused|recycl|circular|raw earth/i },
 ];
 
 export type Item = { id: string; text: string[]; tags: string[]; category: string; year: number };
@@ -82,8 +86,8 @@ function eigen(m: number[][], k: number) {
   return out;
 }
 
-/** Classical MDS of the items' cosine distances, normalised to [-1, 1] on both axes. */
-export function embed(items: Item[]): Point[] {
+/** Classical MDS of the items' cosine distances in `k` dimensions, each axis in [-1, 1]. */
+export function embedN(items: Item[], k: number): number[][] {
   const vs = vectors(items);
   const n = items.length;
   const d2 = vs.map((a) => vs.map((b) => (1 - cosine(a, b)) ** 2));
@@ -91,26 +95,37 @@ export function embed(items: Item[]): Point[] {
   const rowMean = d2.map((r) => r.reduce((s, x) => s + x, 0) / n);
   const all = rowMean.reduce((s, x) => s + x, 0) / n;
   const b = d2.map((r, i) => r.map((x, j) => -0.5 * (x - rowMean[i] - rowMean[j] + all)));
-  const [e1, e2] = eigen(b, 2);
-  const pts = items.map((_, i) => ({
-    x: e1.vector[i] * Math.sqrt(Math.max(e1.value, 0)),
-    y: e2.vector[i] * Math.sqrt(Math.max(e2.value, 0)),
-  }));
-  const span = (k: 'x' | 'y') => {
-    const vals = pts.map((p) => p[k]);
-    const lo = Math.min(...vals), hi = Math.max(...vals);
-    return (v: number) => (hi - lo ? ((v - lo) / (hi - lo)) * 2 - 1 : 0);
-  };
-  // Blend each axis with its rank order: the neighbours stay the same, but a dense cluster opens up.
-  const rank = (k: 'x' | 'y') => {
-    const sorted = pts.map((p, i) => [p[k], i]).sort((a, b) => a[0] - b[0]);
-    const r: number[] = [];
-    sorted.forEach(([, i], k2) => { r[i] = n > 1 ? (k2 / (n - 1)) * 2 - 1 : 0; });
-    return r;
-  };
-  const sx = span('x'), sy = span('y');
-  const rx = rank('x'), ry = rank('y');
-  return pts.map((p, i) => ({ x: 0.5 * sx(p.x) + 0.5 * rx[i], y: 0.5 * sy(p.y) + 0.5 * ry[i] }));
+  const axes = eigen(b, k).map((e) => {
+    const raw = e.vector.map((x) => x * Math.sqrt(Math.max(e.value, 0)));
+    const lo = Math.min(...raw), hi = Math.max(...raw);
+    const span = raw.map((v) => (hi - lo ? ((v - lo) / (hi - lo)) * 2 - 1 : 0));
+    // Blend each axis with its rank order: the neighbours stay the same, but a dense cluster opens up.
+    const rank: number[] = [];
+    raw.map((v, i) => [v, i]).sort((p, q) => p[0] - q[0]).forEach(([, i], r) => { rank[i] = n > 1 ? (r / (n - 1)) * 2 - 1 : 0; });
+    return span.map((v, i) => 0.5 * v + 0.5 * rank[i]);
+  });
+  return items.map((_, i) => axes.map((a) => a[i]));
+}
+
+/** The 2D map: the first two MDS axes. */
+export function embed(items: Item[]): Point[] {
+  return embedN(items, 2).map(([x, y]) => ({ x, y }));
+}
+
+/**
+ * The 3D map: the first three MDS axes, centred and scaled so the average point sits at 0.75 of the
+ * unit ball; the few outliers are pulled in to its surface, so one far project cannot shrink the cloud.
+ */
+export function embed3(items: Item[]): [number, number, number][] {
+  const pts = embedN(items, 3);
+  const c = [0, 1, 2].map((d) => pts.reduce((s, p) => s + p[d], 0) / pts.length);
+  const centred = pts.map((p) => p.map((v, d) => v - c[d]));
+  const mean = centred.reduce((s, p) => s + Math.hypot(...p), 0) / centred.length || 1;
+  return centred.map((p) => {
+    const r = (Math.hypot(...p) / mean) * 0.75;
+    const k = (r > 1 ? 1 / r : 1) * (0.75 / mean);
+    return p.map((v) => Math.round(v * k * 1000) / 1000) as [number, number, number];
+  });
 }
 
 /**

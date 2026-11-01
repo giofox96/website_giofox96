@@ -264,6 +264,20 @@ footer.foot { margin-top: clamp(48px, 8vw, 96px); border-top: 1px solid var(--li
 .space-tip strong { font-family: var(--f-display); font-size: 15px; letter-spacing: -.01em; }
 .space-tip span { opacity: .75; }
 .space-cap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 24px; margin: 0; padding: 10px 16px; border-top: 1px solid var(--line); color: var(--muted); background: var(--surface); }
+.space.is-3d .node { transition: opacity .3s; }
+.space.js.on.popped .bub, .space.js.on.popped .mark { animation: none; }
+.space .shade { opacity: 0; pointer-events: none; transition: opacity .6s; }
+.space.is-3d .shade { opacity: 1; }
+.space .globe { opacity: 0; transition: opacity .6s; pointer-events: none; }
+.space .globe path { fill: none; stroke: var(--line); stroke-width: 1; }
+.space.is-3d .globe { opacity: .7; }
+/* In 3D the theme crosses would crowd the cloud: only the one picked in the filters shows. */
+.space.is-3d .mark { opacity: 0; }
+.space.is-3d[data-filter] .mark:not(.dim) { opacity: 1; }
+.space.is-3d .space-svg { cursor: grab; touch-action: pan-y; user-select: none; }
+.space.dragging .space-svg { cursor: grabbing; }
+.space .hint3d { display: none; }
+.space.is-3d .hint3d { display: inline; }
 
 /* Map of places */
 .atlas { margin-bottom: 40px; }
