@@ -10,6 +10,7 @@ context: Prix W 2023, competition entry
 location: Paris
 coords: [48.835, 2.38]
 summary: An abandoned freight yard near La Rapée turned into a 15-minute district, with modular micro-housing units set inside renovated industrial sheds.
+tags: [Housing, Modular micro-housing, Adaptive reuse, 15-minute city]
 link: https://prixw.com/prix-w-2023-fr
 linkLabel: Prix W 2023 competition
 team: [Giovanni Carlo Volpe, Aurora Perta]

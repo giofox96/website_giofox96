@@ -9,6 +9,7 @@ context: Politecnico di Bari
 location: Tamburi, Taranto
 coords: [40.49, 17.22]
 summary: Filling the urban voids between public housing blocks, a transport hub that overcomes the drop to the sea, and a colonnade that links church, mall and station.
+tags: [Urban regeneration, Densification, Public housing, Transport hub]
 team: [Giovanni Carlo Volpe, Aurora Perta]
 cover: ./cover.jpg
 coverAlt: Axonometric drawing of the new blocks and squares in the Tamburi district
