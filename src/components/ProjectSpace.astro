@@ -84,9 +84,9 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
       ))}
     </div>
     <span class="modes space-mode" role="group" aria-label="View">
-      <button type="button" class="chip" data-view="map" aria-pressed="true">2D</button>
-      <button type="button" class="chip" data-view="3d" aria-pressed="false">3D</button>
-      <button type="button" class="chip" data-view="time" aria-pressed="false">Timeline</button>
+      <button type="button" class="chip" data-view="map" aria-pressed="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="5" cy="6" r="3" /><circle cx="11.5" cy="10.5" r="2.5" /></svg>2D</button>
+      <button type="button" class="chip" data-view="3d" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6.2" /><ellipse cx="8" cy="8" rx="6.2" ry="2.3" /><ellipse cx="8" cy="8" rx="2.3" ry="6.2" /></svg>3D</button>
+      <button type="button" class="chip" data-view="time" aria-pressed="false"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M1.5 11.5h13M3.5 9v5M8 9v5M12.5 9v5" /><circle cx="5.5" cy="4.5" r="2" /><circle cx="11" cy="5" r="1.6" /></svg>Timeline</button>
     </span>
   </div>
   {views.map((v, vi) => (
@@ -194,9 +194,10 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
         const was = view;
         view = next;
         modeBtns.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-        const apply = () => { if (view === next) root.classList.toggle('is-time', next === 'time'); };
-        if (next === '3d') { root.classList.remove('is-time'); three.enter(); }
-        else if (was === '3d') three.leave(apply);
+        const apply = () => root.classList.toggle('is-time', next === 'time');
+        // From and to the timeline the 3D view tweens straight to the year positions, with no stop in 2D.
+        if (next === '3d') { three.enter(root.classList.contains('is-time')); root.classList.remove('is-time'); }
+        else if (was === '3d') { three.leave(next === 'time'); apply(); }
         else apply();
       }),
     );
@@ -315,7 +316,8 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
       const vb = svg.viewBox.baseVal;
       const nodes = [...svg.querySelectorAll<SVGAElement>('.node')].map((n) => ({
         n, lens: n.querySelector<SVGGElement>('.lens')!, p: p3(n),
-        ex: +n.style.getPropertyValue('--ex'), ey: +n.style.getPropertyValue('--ey'), x: 0, y: 0, z: 0,
+        ex: +n.style.getPropertyValue('--ex'), ey: +n.style.getPropertyValue('--ey'),
+        tx: +n.style.getPropertyValue('--tx'), ty: +n.style.getPropertyValue('--ty'), x: 0, y: 0, z: 0,
       }));
       return {
         svg, nodes, cx: vb.width / 2, cy: vb.height / 2,
@@ -336,7 +338,7 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
     ];
 
     let yaw = 0.5, pitch = -0.3, spin = 0.12, vyaw = 0, vpitch = 0;
-    let k = 0, goal = 0, raf = 0, last = 0, visible = false, done: (() => void) | null = null;
+    let k = 0, goal = 0, raf = 0, last = 0, visible = false, flatTime = false;
     let drag: { x: number; y: number; moved: boolean; id: number } | null = null;
     const F = 3.4; // camera distance in units of the cloud's radius
 
@@ -364,7 +366,9 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
         if (!v.svg.clientWidth) continue;
         for (const o of v.nodes) {
           const q = project(v, o.p);
-          o.x = o.ex + (q.x - o.ex) * e; o.y = o.ey + (q.y - o.ey) * e; o.z = q.z;
+          // The flat end of the tween: the 2D map, or the timeline when coming from or going to it.
+          const bx = flatTime ? o.tx : o.ex, by = flatTime ? o.ty : o.ey;
+          o.x = bx + (q.x - bx) * e; o.y = by + (q.y - by) * e; o.z = q.z;
           const s = 1 + (q.s * 0.72 - 1) * e;
           o.n.style.transform = `translate(${o.x.toFixed(1)}px, ${o.y.toFixed(1)}px) scale(${s.toFixed(3)})`;
           o.lens.style.opacity = (1 - e * (1 - (0.4 + 0.6 * (q.z + 1) / 2))).toFixed(2);
@@ -400,7 +404,6 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
         v.marks.forEach((m) => m.m.setAttribute('transform', m.t0));
       }
       root.classList.remove('is-3d');
-      done?.(); done = null;
     };
 
     new IntersectionObserver((es) => {
@@ -443,15 +446,15 @@ const delay = Object.fromEntries(order.map((i, k) => [i, k * 70]));
     }
 
     return {
-      enter() {
-        done = null;
+      enter(fromTime: boolean) {
+        flatTime = fromTime;
         root.classList.add('is-3d', 'popped');
         goal = 1;
         start();
       },
-      leave(then: () => void) {
+      leave(toTime: boolean) {
         goal = 0;
-        done = then;
+        flatTime = toTime;
         if (!raf) { k = 0; reset(); }
         else if (reduced) k = 0;
       },
