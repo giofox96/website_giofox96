@@ -31,6 +31,11 @@ workflow:
   - label: Optimisation
     text: Shorter cantilevers, extra supports and no outer boundary loop. Maximum displacement down to 83 mm.
     image: ./step-5.jpg
+videos:
+  - src: video/arthropod-optimisation.mp4
+    poster: video/arthropod-optimisation.jpg
+    caption: Lattice optimisation running in Grasshopper
+    loop: true
 gallery:
   - image: ./park.jpg
     alt: The pavilion in a sunlit park, its arched lattice legs seen from the side, with children playing on the lawn

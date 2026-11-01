@@ -31,6 +31,11 @@ workflow:
   - label: Interface
     text: An interactive journal with the essay, the original interiors and the generated ones.
     image: ./step-5.jpg
+videos:
+  - src: video/likable-public-ui.mp4
+    poster: video/likable-public-ui.jpg
+    caption: The essay interface
+    loop: true
 gallery:
   - image: ./question.jpg
     alt: "The essay's question: what happens to public space when it is designed for the economy of likes, as clinics, libraries and schools start to look like cafés"

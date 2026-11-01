@@ -33,6 +33,10 @@ workflow:
   - label: Data filters
     text: View filters colour every member by its radius, from 400 mm at the top to 1500 mm at the base.
     image: ./step-6.jpg
+videos:
+  - src: video/megadiagrid-presentation.mp4
+    poster: video/megadiagrid-presentation.jpg
+    caption: From Grasshopper to Revit, project presentation
 gallery:
   - image: ./context.jpg
     alt: Project context slide with the two megadiagrid iterations in red and their three KPIs

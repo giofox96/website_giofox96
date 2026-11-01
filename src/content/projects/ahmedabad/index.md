@@ -17,6 +17,15 @@ faculty: Angelos Chronis, Aris Vartholomaios, Maria Papadimitraki, Alex Christod
 link: https://blog.iaac.net/ahmedabads-extreme-climate-environmental-performance-driven-design-from-data-to-form/
 cover: ./cover.jpg
 coverAlt: Render of the twisted mixed-use tower with vertical shading among white context blocks
+videos:
+  - src: video/ahmedabad-massing-1.mp4
+    poster: video/ahmedabad-massing-1.jpg
+    caption: Optimising the massing, first step
+    loop: true
+  - src: video/ahmedabad-massing-2.mp4
+    poster: video/ahmedabad-massing-2.jpg
+    caption: Optimising the massing, second step
+    loop: true
 gallery:
   - image: ./concept.jpg
     alt: Concept diagram dividing the site into private and public zones, with residential, office and commercial blocks between the monsoon and dry-season winds and the Sabarmati riverfront

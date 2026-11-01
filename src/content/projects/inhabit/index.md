@@ -36,6 +36,22 @@ workflow:
   - label: Evaluation
     text: Scores, daylight and daily routines for each person in the household.
     image: ./step-6.jpg
+videos:
+  - src: video/inhabit-daylight.mp4
+    poster: video/inhabit-daylight.jpg
+    caption: Daylight check on a selected plan
+    loop: true
+  - src: video/inhabit-routine.mp4
+    poster: video/inhabit-routine.jpg
+    caption: Selecting a plan and simulating a daily routine
+    loop: true
+  - src: video/inhabit-furniture-clusters.mp4
+    poster: video/inhabit-furniture-clusters.jpg
+    caption: HDBSCAN clusters of the furniture catalogue
+    loop: true
+  - src: video/inhabit-adapt.mp4
+    poster: video/inhabit-adapt.jpg
+    caption: The adaptation tool reshaping a layout
 gallery:
   - image: ./approach.jpg
     alt: "The three phases of the tool: understand, explore and evaluate"
