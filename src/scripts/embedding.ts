@@ -17,7 +17,7 @@ export const themes: Theme[] = [
   { id: 'bim', label: 'BIM', match: /\bbim\b|revit|\bifc\b|speckle|rhino\.inside|point cloud|scan-to-bim/i },
   { id: 'land', label: 'Landscape', match: /landscape|xeriscap|phytoremediation|native planting|garden|public space/i },
   { id: 'house', label: 'Housing', match: /housing|cohousing|floor plan|dwelling/i },
-  { id: 'reuse', label: 'Reuse', match: /reuse|reused|recycl|circular|raw earth/i },
+  { id: 'reuse', label: 'Reuse', match: /reuse|reused|recycl|circular|raw earth|restor|heritage/i },
 ];
 
 export type Item = { id: string; text: string[]; tags: string[]; category: string; year: number };
