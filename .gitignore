@@ -7,3 +7,6 @@ source/
 
 # Rendered audio stays local
 music/*.wav
+
+# Graphify knowledge-graph output (local only)
+graphify-out/
